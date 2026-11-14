@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<base target="_top">
+<style>
+:root{--ink:#1d2125;--mut:#666d75;--line:#d9dcdf;--bg:#f6f5f1;--card:#fff;--y:#f5c400;--ok:#1f7a45;--bad:#b3261e;--wrn:#8a6d00}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--ink);color:#fff;padding:14px 18px;border-bottom:5px solid var(--y)}
+header h1{margin:0;font-size:19px}
+main{max-width:1100px;margin:0 auto;padding:16px;display:grid;gap:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);padding:10px 12px}
+.stat b{display:block;font-size:26px}.stat span{color:var(--mut);font-size:13px}
+section{background:var(--card);border:1px solid var(--line);padding:16px}
+h2{margin:0 0 12px;font-size:16px}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+label{display:grid;gap:4px;font-weight:600;font-size:13px}
+input,select,textarea{font:inherit;padding:9px;border:1px solid #aab0b6;border-radius:3px;background:#fff;min-height:42px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid var(--y);outline-offset:1px}
+.full{grid-column:1/-1}
+button{font:inherit;font-weight:700;padding:11px 18px;border:0;background:var(--y);color:var(--ink);cursor:pointer;border-radius:3px}
+button:disabled{opacity:.6}
+.info{color:var(--mut);font-size:13px;font-weight:400}
+.msg{padding:9px 12px;margin-top:10px;border-left:4px solid;display:none}
+.msg.ok{display:block;border-color:var(--ok);background:#e8f4ec}.msg.err{display:block;border-color:var(--bad);background:#fbeae9}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:13px;color:var(--mut)}
+.b{padding:2px 8px;border-radius:10px;font-size:12px;font-weight:700}
+.Beroperasi{background:#e8f4ec;color:var(--ok)}.Standby{background:#fff4cc;color:var(--wrn)}.Rusak{background:#fbeae9;color:var(--bad)}
+
+.charts{display:grid;gap:16px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.chead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:4px}
+.chead h2{margin:0}
+.sub{color:var(--mut);font-size:13px;margin:0 0 10px}
+.seg{display:flex;border:1px solid #aab0b6;border-radius:4px;overflow:hidden}
+.seg button{background:#fff;border-radius:0;padding:6px 12px;font-size:13px;font-weight:600;min-height:34px}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+.kpi{display:flex;flex-wrap:wrap;gap:22px;margin:6px 0 12px}
+.kpi div{font-size:13px;color:var(--mut)}.kpi b{display:block;font-size:20px;color:var(--ink)}
+.line svg{width:100%;height:auto;display:block;overflow:visible}
+.line text{font:11px system-ui,sans-serif;fill:#666d75}
+.line .val{font-weight:700;fill:#1d2125;font-size:12px}
+.bars{display:grid;gap:9px}
+.brow{display:grid;grid-template-columns:78px 1fr;gap:8px;align-items:center}
+.brow .n{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track{background:#eef0f1;height:26px;border-radius:3px;position:relative}
+.fill{height:100%;border-radius:3px;min-width:3px;transition:width .5s}
+.track span{position:absolute;left:8px;top:0;line-height:26px;font-size:12px;font-weight:700;color:var(--ink)}
+.fill.jam{background:#3a4650}.fill.bbm{background:var(--y)}
+.empty{color:var(--mut);padding:14px 0}
+@media(prefers-reduced-motion:reduce){.fill{transition:none}}
+
+header{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{background:transparent;color:#fff;border:1px solid #555d65;padding:8px 14px;min-height:38px}
+.tabs button[aria-selected=true]{background:var(--y);color:var(--ink);border-color:var(--y)}
+.pane{display:grid;gap:16px}.pane[hidden]{display:none}
+.brow.wide{grid-template-columns:1fr;gap:3px}
+.hint{background:#fff8d6;border-left:4px solid var(--y);padding:8px 12px;font-size:13px}
+.meter{display:inline-block;width:64px;height:8px;background:#eef0f1;border-radius:4px;vertical-align:middle;margin-right:6px}
+.meter i{display:block;height:100%;background:var(--ink);border-radius:4px}
+table.wide{min-width:820px}
+.tag{background:#eef0f1;border-radius:10px;padding:2px 8px;font-size:12px}
+
+button.alt{background:var(--ink);color:#fff}
+.lbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.rep h3{font-size:15px;margin:20px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--y)}
+.rhead{text-align:center;margin-bottom:14px}.rhead h2{font-size:20px;margin:0}.rhead div{color:var(--mut)}
+.rep ul{margin:0;padding-left:18px}.rep li{margin:3px 0}
+.sign{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px;text-align:center}
+.sign div{padding-top:60px}.sign span{display:block;border-top:1px solid var(--ink);padding-top:4px;font-size:13px}
+.tot td{font-weight:700;background:#faf9f4}
+
+.fill.ok{background:var(--ok)}.fill.mid{background:var(--y)}.fill.low{background:var(--bad)}
+.mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--mut);margin:0 0 8px}
+.legend i{display:inline-block;width:12px;height:12px;margin-right:5px;vertical-align:-2px}
+.okc{color:var(--ok);font-weight:700}.lowc{color:var(--bad)}
+@media print{
+  header,.noprint{display:none!important}
+  body{background:#fff;font-size:12px}
+  .pane{display:none!important}#tabLaporan{display:block!important}
+  main{padding:0;max-width:none}
+  section.rep{border:0;padding:0}
+  .stat{border:1px solid #999}
+  table{min-width:0;font-size:11px}th,td{white-space:normal}
+  .scroll{overflow:visible}
+}
+@media(max-width:600px){main{padding:10px}}
+</style>
+</head>
+<body>
+<header><h1>Pemantau Pemakaian Alat Berat</h1>
+  <nav class="tabs" id="tabs" role="tablist">
+    <button type="button" role="tab" data-t="tabAlat" aria-selected="true">Pemakaian Alat</button>
+    <button type="button" role="tab" data-t="tabLangsir" aria-selected="false">Langsir Galian (DT)</button>
+    <button type="button" role="tab" data-t="tabGalian" aria-selected="false">Hasil Galian</button>
+    <button type="button" role="tab" data-t="tabProd" aria-selected="false">Produktivitas</button>
+    <button type="button" role="tab" data-t="tabLaporan" aria-selected="false">Laporan Harian</button>
+  </nav></header>
+<main>
+<div class="pane" id="tabAlat">
+  <div class="stats" id="stats"></div>
+
+  <section class="line">
+    <div class="chead">
+      <h2>Total pemakaian BBM</h2>
+      <div class="seg" id="rng" role="group" aria-label="Rentang waktu">
+        <button type="button" data-d="7" aria-pressed="false">7 hari</button>
+        <button type="button" data-d="14" aria-pressed="true">14 hari</button>
+        <button type="button" data-d="30" aria-pressed="false">30 hari</button>
+      </div>
+    </div>
+    <p class="sub">Total liter solar yang dipakai semua alat setiap hari.</p>
+    <div class="kpi" id="kpi"></div>
+    <div id="lineChart"></div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>Total jam kerja per alat</h2>
+      <p class="sub">Alat dengan jam kerja terbanyak ada di paling atas.</p>
+      <div class="bars" id="barJam"></div>
+    </section>
+    <section>
+      <h2>Total BBM per alat</h2>
+      <p class="sub">Alat dengan pemakaian BBM terbesar ada di paling atas.</p>
+      <div class="bars" id="barBbm"></div>
+    </section>
+  </div>
+
+  <section>
+    <h2>Catat pemakaian alat</h2>
+    <form id="f">
+      <label>Tanggal<input type="date" name="tanggal" required></label>
+      <label>Alat<select name="kode" id="kode" required></select></label>
+      <label>Operator<input name="operator" required autocomplete="off"></label>
+      <label>Lokasi / pekerjaan<input name="lokasi" autocomplete="off"></label>
+      <label>HM awal<input type="number" step="0.1" name="hmAwal" id="hmAwal" required><span class="info" id="hint"></span></label>
+      <label>HM akhir<input type="number" step="0.1" name="hmAkhir" id="hmAkhir" required><span class="info" id="jam">Jam kerja: 0</span></label>
+      <label>BBM (liter)<input type="number" step="0.1" name="bbm" value="0"></label>
+      <label>Status<select name="status"><option>Beroperasi</option><option>Standby</option><option>Rusak</option></select></label>
+      <label class="full">Catatan hasil galian / langsir<textarea name="catatan" rows="2" placeholder="Contoh: material keras, area berlumpur, ada batu besar, akses hauling licin"></textarea></label>
+      <div class="full"><button id="btn">Simpan data</button><div class="msg" id="msg"></div></div>
+    </form>
+  </section>
+
+  <section>
+    <h2>Rekap per alat</h2>
+    <div class="scroll"><table id="rekap"></table></div>
+  </section>
+
+  <section>
+    <h2>Input terbaru</h2>
+    <div class="scroll"><table id="log"></table></div>
+  </section>
+</div>
+
+<div class="pane" id="tabLangsir" hidden>
+  <div class="stats" id="gStats"></div>
+
+  <section>
+    <h2>Progres total langsiran bekas galian</h2>
+    <div id="gProg"></div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>Volume langsir per DT</h2>
+      <p class="sub">Total material galian (m&sup3;) yang sudah diangkut tiap Dump Truck.</p>
+      <div class="bars" id="gBarVol"></div>
+    </section>
+    <section>
+      <h2>Jumlah rit per DT</h2>
+      <p class="sub">Berapa kali tiap DT bolak-balik mengangkut material.</p>
+      <div class="bars" id="gBarRit"></div>
+    </section>
+  </div>
+
+  <section>
+    <h2>Rute langsir terbesar</h2>
+    <p class="sub">Dari lokasi galian ke lokasi buang, diurutkan menurut volume.</p>
+    <div class="bars" id="gBarRute"></div>
+  </section>
+
+  <section>
+    <h2>Catat langsir bekas galian</h2>
+    <form id="g">
+      <label>Tanggal<input type="date" name="tanggal" required></label>
+      <label>Dump Truck<select name="kode" id="gDt" required></select></label>
+      <label>Sopir<input name="sopir" required autocomplete="off"></label>
+      <label>Excavator pemuat<select name="excavator" id="gExc" required></select></label>
+      <label>Excavator bongkar muatan<select name="excavatorBongkar" id="gExcB"></select><span class="info">Alat di lokasi buang (opsional)</span></label>
+      <label>Asal (lokasi galian)<input name="asal" list="dlAsal" required autocomplete="off" placeholder="mis. Pit A"></label>
+      <label>Tujuan (lokasi buang)<input name="tujuan" list="dlTujuan" required autocomplete="off" placeholder="mis. Disposal 1"></label>
+      <label>Material<select name="material"><option>Tanah</option><option>Batu</option><option>Lumpur</option><option>Campuran</option></select></label>
+      <label>Jumlah rit<input type="number" min="1" step="1" name="rit" id="gRit" required></label>
+      <label>Kapasitas per rit (m&sup3;)<input type="number" min="0.1" step="0.1" name="kapasitas" id="gKap" value="10" required></label>
+      <label>Jarak angkut (km)<input type="number" min="0" step="0.1" name="jarak"><span class="info" id="gVol">Volume: 0 m&sup3;</span></label>
+      <label class="full">Catatan<textarea name="catatan" rows="2"></textarea></label>
+      <div class="full"><button id="gBtn">Simpan langsir</button><div class="msg" id="gMsg"></div></div>
+    </form>
+    <datalist id="dlAsal"></datalist><datalist id="dlTujuan"></datalist>
+  </section>
+
+  <section>
+    <h2>Langsir terbaru</h2>
+    <div class="scroll"><table id="gLog"></table></div>
+  </section>
+</div>
+
+<div class="pane" id="tabGalian" hidden>
+  <section>
+    <div class="chead">
+      <h2>Hasil galian per alat</h2>
+      <div class="seg" id="gaRng" role="group" aria-label="Rentang waktu">
+        <button type="button" data-d="7" aria-pressed="false">7 hari</button>
+        <button type="button" data-d="14" aria-pressed="true">14 hari</button>
+        <button type="button" data-d="30" aria-pressed="false">30 hari</button>
+      </div>
+    </div>
+    <p class="sub">Volume material yang digali tiap excavator per hari dibanding target. Data diambil dari catatan langsir (kolom excavator pemuat). Target periode dihitung dari hari yang ada catatan langsir.</p>
+    <div class="stats" id="gaStats"></div>
+    <div class="hint" id="gaInfo" style="margin-top:12px">Memuat data...</div>
+  </section>
+
+  <section>
+    <h2>Progres total volume galian</h2>
+    <div id="gaProg"></div>
+  </section>
+
+  <section class="line">
+    <h2>Volume galian harian vs target</h2>
+    <div class="legend">
+      <span><i style="background:#1f7a45"></i>Target tercapai</span>
+      <span><i style="background:#f5c400"></i>75-99%</span>
+      <span><i style="background:#b3261e"></i>&lt; 75%</span>
+      <span>- - - Target harian</span>
+    </div>
+    <div id="gaChart"></div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>Capaian per excavator</h2>
+      <p class="sub">Garis hitam pada batang = target (100%).</p>
+      <div class="bars" id="gaBarCapai"></div>
+    </section>
+    <section>
+      <h2>Atur target galian</h2>
+      <p class="sub">Target volume galian per hari untuk satu excavator. Tersimpan di sheet Alat kolom E.</p>
+      <form id="gaForm">
+        <label>Excavator<select name="kode" id="gaKode" required></select></label>
+        <label>Target (m&sup3;/hari)<input type="number" min="1" step="1" id="gaTarget" required></label>
+        <div class="full"><button id="gaBtn">Simpan target</button><div class="msg" id="gaMsg"></div></div>
+      </form>
+    </section>
+  </div>
+
+  <section>
+    <h2>Rekap per excavator</h2>
+    <div class="scroll"><table class="wide" id="gaRekap"></table></div>
+  </section>
+
+  <section>
+    <h2>Rincian hasil galian per hari</h2>
+    <p class="sub">Volume galian (m&sup3;) tiap excavator. Hijau = mencapai target alat tersebut, merah = di bawah target.</p>
+    <div class="scroll"><table class="wide" id="gaHarian"></table></div>
+  </section>
+
+  <section>
+    <div class="chead">
+      <h2>Rekap hasil galian mingguan dan bulanan</h2>
+      <div class="seg" id="gaRekapMode" role="group" aria-label="Jenis rekap">
+        <button type="button" data-mode="minggu" aria-pressed="true">Mingguan</button>
+        <button type="button" data-mode="bulan" aria-pressed="false">Bulanan</button>
+      </div>
+    </div>
+    <p class="sub">Rekap berdasarkan seluruh histori transaksi langsir. Target dihitung dari jumlah hari yang memiliki catatan langsir.</p>
+    <div class="scroll"><table class="wide" id="gaRekapPeriode"></table></div>
+  </section>
+</div>
+
+<div class="pane" id="tabProd" hidden>
+  <section>
+    <div class="chead">
+      <h2>Produktivitas alat berat</h2>
+      <div class="seg" id="pRng" role="group" aria-label="Periode">
+        <button type="button" data-d="7" aria-pressed="false">7 hari</button>
+        <button type="button" data-d="30" aria-pressed="true">30 hari</button>
+        <button type="button" data-d="0" aria-pressed="false">Semua</button>
+      </div>
+    </div>
+    <p class="sub">Seberapa banyak pekerjaan yang dihasilkan alat dibanding jam dan BBM yang dipakai.</p>
+    <div class="stats" id="pStats"></div>
+    <div class="hint" id="pInfo" style="margin-top:12px">Memuat data...</div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>Produktivitas Dump Truck</h2>
+      <p class="sub">Volume langsir per jam kerja (m&sup3;/jam). Makin panjang makin produktif.</p>
+      <div class="bars" id="pBarDT"></div>
+    </section>
+    <section>
+      <h2>Produktivitas Excavator</h2>
+      <p class="sub">Volume material yang dimuat per jam kerja (m&sup3;/jam).</p>
+      <div class="bars" id="pBarExc"></div>
+    </section>
+  </div>
+
+  <section>
+    <h2>Utilisasi alat</h2>
+    <p class="sub">Jam kerja dibanding target <span id="pTarget">8</span> jam per hari yang dicatat.</p>
+    <div class="bars" id="pBarUtil"></div>
+  </section>
+
+  <section>
+    <h2>Rapor per alat</h2>
+    <div class="scroll"><table class="wide" id="pTabel"></table></div>
+    <p class="sub" style="margin-top:10px">Utilisasi: Baik &ge; 75%, Cukup 50-74%, Rendah &lt; 50%. Ketersediaan = persentase hari tercatat alat tidak berstatus Rusak. L/m&sup3; = liter BBM per m&sup3; material.</p>
+  </section>
+</div>
+
+<div class="pane" id="tabLaporan" hidden>
+  <section class="noprint">
+    <div class="chead">
+      <h2>Laporan harian</h2>
+      <div class="lbar">
+        <label>Tanggal laporan<input type="date" id="lTgl"></label>
+        <button type="button" id="lWa">Salin untuk WhatsApp</button>
+        <button type="button" id="lPrint" class="alt">Cetak / Simpan PDF</button>
+      </div>
+    </div>
+    <p class="sub">Rekap otomatis dari data pemakaian alat dan langsir pada tanggal yang dipilih.</p>
+    <div class="msg" id="lMsg"></div>
+    <textarea id="lBox" readonly rows="10" hidden style="width:100%;margin-top:8px"></textarea>
+  </section>
+  <section class="rep" id="lKertas"><div class="empty">Memuat laporan...</div></section>
+</div>
+</main>
+
+<script>
+let D = null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const f = $('f');
+f.tanggal.value = new Date().toLocaleDateString('en-CA');
+
+function render(d) {
+  D = d;
+  renderCharts();
+  renderLangsir();
+  const s = d.ringkas;
+  $('stats').innerHTML = [
+    [s.alatBeroperasi, 'Alat beroperasi hari ini'], [s.jamHariIni, 'Jam kerja hari ini'],
+    [s.bbmHariIni + ' L', 'BBM hari ini'], [s.alatRusak, 'Alat rusak']
+  ].map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+
+  const cur = $('kode').value;
+  $('kode').innerHTML = d.alat.map(a => `<option value="${esc(a.kode)}">${esc(a.kode)} - ${esc(a.nama)}</option>`).join('');
+  if (cur) $('kode').value = cur;
+  hint();
+
+  $('rekap').innerHTML = '<tr><th>Alat</th><th>HM terakhir</th><th>Total jam</th><th>Total BBM (L)</th><th>L/jam</th><th>Status</th></tr>' +
+    d.rekap.map(r => `<tr><td>${esc(r.kode)} - ${esc(r.nama)}</td><td>${r.hmTerakhir}</td><td>${r.jam.toFixed(1)}</td><td>${r.bbm.toFixed(1)}</td><td>${r.lPerJam}</td><td><span class="b ${esc(r.status)}">${esc(r.status)}</span></td></tr>`).join('');
+
+  $('log').innerHTML = d.terbaru.length
+    ? '<tr><th>Tanggal</th><th>Alat</th><th>Operator</th><th>Lokasi</th><th>Jam</th><th>BBM</th><th>Status</th></tr>' +
+      d.terbaru.map(l => `<tr><td>${esc(l.tanggal)}</td><td>${esc(l.kode)}</td><td>${esc(l.operator)}</td><td>${esc(l.lokasi)}</td><td>${l.jam}</td><td>${l.bbm}</td><td><span class="b ${esc(l.status)}">${esc(l.status)}</span></td></tr>`).join('')
+    : '<tr><td>Belum ada data. Isi formulir di atas untuk mulai mencatat.</td></tr>';
+}
+
+
+const nf = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 });
+let RANGE = 14;
+
+function tgl(s) { const [y, m, d] = s.split('-'); return d + '/' + m; }
+
+function renderLine() {
+  const data = D.harian.slice(-RANGE);
+  const total = data.reduce((t, x) => t + x.bbm, 0);
+  const aktif = data.filter(x => x.bbm > 0).length;
+  const top = data.reduce((a, b) => b.bbm > a.bbm ? b : a, data[0]);
+  $('kpi').innerHTML =
+    `<div><b>${nf.format(total)} L</b>Total ${RANGE} hari</div>` +
+    `<div><b>${nf.format(aktif ? total / aktif : 0)} L</b>Rata-rata per hari kerja</div>` +
+    `<div><b>${top.bbm ? nf.format(top.bbm) + ' L' : '-'}</b>Tertinggi${top.bbm ? ' (' + tgl(top.tanggal) + ')' : ''}</div>`;
+  if (!total) { $('lineChart').innerHTML = '<div class="empty">Belum ada data BBM pada rentang ini.</div>'; return; }
+
+  const W = 700, H = 250, L = 44, R = 14, T = 22, B = 28, iw = W - L - R, ih = H - T - B;
+  const rawMax = Math.max(...data.map(x => x.bbm));
+  const step = Math.pow(10, Math.floor(Math.log10(rawMax / 4 || 1)));
+  const unit = [1, 2, 2.5, 5, 10].map(m => m * step).find(u => u * 4 >= rawMax) || step * 10;
+  const max = unit * 4;
+  const X = i => L + (data.length === 1 ? iw / 2 : i * iw / (data.length - 1));
+  const Y = v => T + ih - v / max * ih;
+  let g = '';
+  for (let i = 0; i <= 4; i++) {
+    const y = Y(unit * i);
+    g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="#e3e5e7"/><text x="${L - 6}" y="${y + 4}" text-anchor="end">${nf.format(unit * i)}</text>`;
+  }
+  const pts = data.map((x, i) => [X(i), Y(x.bbm)]);
+  const path = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const area = path + ` L${pts[pts.length - 1][0]} ${T + ih} L${pts[0][0]} ${T + ih} Z`;
+  const every = Math.ceil(data.length / 7);
+  const xl = data.map((x, i) => (i % every === 0 || i === data.length - 1) ? `<text x="${X(i)}" y="${H - 8}" text-anchor="middle">${tgl(x.tanggal)}</text>` : '').join('');
+  const dots = data.map((x, i) => `<circle cx="${pts[i][0]}" cy="${pts[i][1]}" r="${x === top ? 6 : 4}" fill="${x === top ? '#1d2125' : '#f5c400'}" stroke="#1d2125" stroke-width="2"><title>${tgl(x.tanggal)}: ${nf.format(x.bbm)} L BBM, ${nf.format(x.jam)} jam kerja</title></circle>`).join('');
+  const tp = pts[data.indexOf(top)];
+  $('lineChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafik total pemakaian BBM harian">
+    ${g}<path d="${area}" fill="#f5c400" opacity=".28"/><path d="${path}" fill="none" stroke="#1d2125" stroke-width="2.5" stroke-linejoin="round"/>
+    ${dots}<text class="val" x="${tp[0]}" y="${tp[1] - 12}" text-anchor="middle">${nf.format(top.bbm)} L</text>${xl}
+    <text x="${L}" y="12">Liter</text></svg>`;
+}
+
+function renderBars(id, rows, key, cls, unit, lab) {
+  rows = rows.filter(r => r[key] > 0).sort((a, b) => b[key] - a[key]);
+  if (!rows.length) { $(id).innerHTML = '<div class="empty">Belum ada data. Simpan input pertama untuk melihat grafik.</div>'; return; }
+  const max = rows[0][key];
+  $(id).innerHTML = rows.map(r => { const w = (r[key] / max * 78).toFixed(1); return `<div class="brow${lab ? ' wide' : ''}"><div class="n" title="${esc(r.nama || r[lab || 'kode'])}">${esc(r[lab || 'kode'])}</div>
+    <div class="track"><div class="fill ${cls}" style="width:${w}%"></div><span style="left:calc(${w}% + 8px)">${nf.format(r[key])} ${unit}</span></div></div>`; }).join('');
+}
+
+function renderCharts() { renderLine(); renderBars('barJam', D.rekap, 'jam', 'jam', 'jam'); renderBars('barBbm', D.rekap, 'bbm', 'bbm', 'L'); }
+
+$('rng').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  RANGE = +b.dataset.d;
+  [...$('rng').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  renderLine();
+};
+
+function fillSel(id, list) {
+  const cur = $(id).value;
+  $(id).innerHTML = list.map(a => `<option value="${esc(a.kode)}">${esc(a.kode)} - ${esc(a.nama)}</option>`).join('');
+  if (cur) $(id).value = cur;
+}
+function renderLangsir() {
+  const g = D.langsir, s = g.ringkas;
+  $('gStats').innerHTML = [[nf.format(s.ritHariIni), 'Rit hari ini'], [nf.format(s.volHariIni) + ' m\u00b3', 'Volume hari ini'],
+    [s.dtAktif, 'DT aktif hari ini'], [nf.format(s.volTotal) + ' m\u00b3', 'Total material dipindah']]
+    .map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+  fillSel('gDt', g.dt); fillSel('gExc', g.exc);
+  const curB = $('gExcB').value;
+  $('gExcB').innerHTML = '<option value="">- Tidak ada -</option>' + g.exc.map(a => `<option value="${esc(a.kode)}">${esc(a.kode)} - ${esc(a.nama)}</option>`).join('');
+  if (curB) $('gExcB').value = curB;
+  $('gProg').innerHTML = progHtml('Total langsiran', g.progres);
+  $('dlAsal').innerHTML = g.lokasi.asal.map(x => `<option value="${esc(x)}">`).join('');
+  $('dlTujuan').innerHTML = g.lokasi.tujuan.map(x => `<option value="${esc(x)}">`).join('');
+  renderBars('gBarVol', g.perDT, 'vol', 'bbm', 'm\u00b3');
+  renderBars('gBarRit', g.perDT, 'rit', 'jam', 'rit');
+  renderBars('gBarRute', g.perRute, 'vol', 'bbm', 'm\u00b3', 'rute');
+  $('gLog').innerHTML = g.terbaru.length
+    ? '<tr><th>Tanggal</th><th>DT</th><th>Sopir</th><th>Pemuat</th><th>Bongkar</th><th>Rute</th><th>Material</th><th>Rit</th><th>Volume</th><th>Catatan</th></tr>' +
+      g.terbaru.map(l => `<tr><td>${esc(l.tanggal)}</td><td>${esc(l.kode)}</td><td>${esc(l.sopir)}</td><td>${esc(l.excavator)}</td><td>${esc(l.excBongkar) || '-'}</td><td>${esc(l.asal)} \u2192 ${esc(l.tujuan)}</td><td><span class="tag">${esc(l.material)}</span></td><td>${l.rit}</td><td>${nf.format(l.vol)} m\u00b3</td><td>${esc(l.catatan) || '-'}</td></tr>`).join('')
+    : '<tr><td>Belum ada data langsir. Isi formulir di atas untuk mulai mencatat.</td></tr>';
+}
+const gf = $('g');
+gf.tanggal.value = new Date().toLocaleDateString('en-CA');
+function hitungVol() { $('gVol').textContent = 'Volume: ' + nf.format((+$('gRit').value || 0) * (+$('gKap').value || 0)) + ' m\u00b3'; }
+$('gRit').oninput = hitungVol; $('gKap').oninput = hitungVol;
+function gShow(t, c) { const m = $('gMsg'); m.textContent = t; m.className = 'msg ' + c; }
+gf.onsubmit = e => {
+  e.preventDefault();
+  $('gBtn').disabled = true; gShow('Menyimpan...', 'ok');
+  google.script.run
+    .withSuccessHandler(d => { render(d); gShow('Langsir tersimpan.', 'ok'); $('gBtn').disabled = false; $('gRit').value = ''; hitungVol(); })
+    .withFailureHandler(err => { gShow(err.message, 'err'); $('gBtn').disabled = false; })
+    .saveLangsir(Object.fromEntries(new FormData(gf)));
+};
+$('tabs').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  [...$('tabs').children].forEach(x => x.setAttribute('aria-selected', x === b));
+  ['tabAlat', 'tabLangsir', 'tabGalian', 'tabProd', 'tabLaporan'].forEach(t => $(t).hidden = t !== b.dataset.t);
+  if (b.dataset.t === 'tabGalian') { loadGalian(); loadRekapGalian('minggu'); }
+  if (b.dataset.t === 'tabProd') loadProd();
+  if (b.dataset.t === 'tabLaporan') loadLaporan();
+};
+
+/* ===== Progres total ===== */
+function progHtml(judul, q) {
+  const w = Math.min(100, q.capai).toFixed(1);
+  return `<div class="brow wide"><div class="n" style="white-space:normal">${esc(judul)}: ${nf.format(q.real)} / ${nf.format(q.target)} m\u00b3 (${nf.format(q.capai)}%)</div>
+    <div class="track"><div class="fill ${q.capai >= 100 ? 'ok' : 'mid'}" style="width:${w}%"></div></div></div>
+    <p class="sub" style="margin:6px 0 0">Sisa ${nf.format(q.sisa)} m\u00b3.` +
+    (q.estHari ? ` Dengan rata-rata ${nf.format(q.rata)} m\u00b3 per hari kerja, perkiraan selesai ${nf.format(q.estHari)} hari kerja lagi.` : q.sisa > 0 ? '' : ' Target tercapai.') + '</p>';
+}
+
+/* ===== Hasil Galian ===== */
+let GA = null, GR = 14;
+const klas = c => c >= 100 ? 'ok' : c >= 75 ? 'mid' : 'low';
+const nilaiG = c => c >= 100 ? ['Tercapai', 'Beroperasi'] : c >= 75 ? ['Hampir', 'Standby'] : ['Belum', 'Rusak'];
+
+function loadGalian() {
+  google.script.run.withSuccessHandler(renderGalian)
+    .withFailureHandler(err => { $('gaInfo').textContent = 'Gagal memuat: ' + err.message; })
+    .getHasilGalian(GR);
+}
+
+function renderGaChart(p) {
+  const data = p.harian, tgt = data[0].target;
+  if (!data.some(h => h.total > 0)) {
+    $('gaChart').innerHTML = '<div class="empty">Belum ada data galian pada rentang ini. Catat langsir dengan memilih excavator pemuat.</div>'; return;
+  }
+  const W = 700, H = 260, L = 48, R = 14, T = 22, B = 28, iw = W - L - R, ih = H - T - B;
+  const rawMax = Math.max(tgt, ...data.map(h => h.total));
+  const step = Math.pow(10, Math.floor(Math.log10(rawMax / 4 || 1)));
+  const unit = [1, 2, 2.5, 5, 10].map(m => m * step).find(u => u * 4 >= rawMax) || step * 10;
+  const max = unit * 4;
+  const Y = v => T + ih - v / max * ih;
+  const bw = iw / data.length, cw = Math.min(34, bw * 0.62);
+  const col = { ok: '#1f7a45', mid: '#f5c400', low: '#b3261e' };
+  let g = '';
+  for (let i = 0; i <= 4; i++) {
+    const y = Y(unit * i);
+    g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="#e3e5e7"/><text x="${L - 6}" y="${y + 4}" text-anchor="end">${nf.format(unit * i)}</text>`;
+  }
+  const bars = data.map((h, i) => {
+    if (!h.total) return '';
+    const x = L + i * bw + (bw - cw) / 2, y = Y(h.total);
+    return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${cw.toFixed(1)}" height="${(T + ih - y).toFixed(1)}" fill="${col[klas(h.capai)]}"><title>${tgl(h.tanggal)}: ${nf.format(h.total)} m\u00b3 (${nf.format(h.capai)}% dari target ${nf.format(h.target)} m\u00b3)</title></rect>` +
+      (data.length <= 14 ? `<text class="val" x="${(x + cw / 2).toFixed(1)}" y="${(y - 5).toFixed(1)}" text-anchor="middle">${nf.format(h.total)}</text>` : '');
+  }).join('');
+  const every = Math.ceil(data.length / 7);
+  const xl = data.map((h, i) => (i % every === 0 || i === data.length - 1)
+    ? `<text x="${(L + i * bw + bw / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle">${tgl(h.tanggal)}</text>` : '').join('');
+  const tline = tgt > 0
+    ? `<line x1="${L}" x2="${W - R}" y1="${Y(tgt)}" y2="${Y(tgt)}" stroke="#1d2125" stroke-width="2" stroke-dasharray="6 4"/><text class="val" x="${W - R}" y="${Y(tgt) - 6}" text-anchor="end">Target ${nf.format(tgt)} m\u00b3</text>` : '';
+  $('gaChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafik volume galian harian dibanding target">${g}${bars}${tline}${xl}<text x="${L}" y="12">m\u00b3</text></svg>`;
+}
+
+function renderCapai(id, rows) {
+  if (!rows.length) { $(id).innerHTML = '<div class="empty">Belum ada excavator. Tambahkan alat berjenis Excavator di sheet Alat.</div>'; return; }
+  const max = Math.max(120, ...rows.map(r => r.capai));
+  $(id).innerHTML = rows.map(r => {
+    const w = (r.capai / max * 100).toFixed(1), m = (100 / max * 100).toFixed(1);
+    return `<div class="brow wide"><div class="n" title="${esc(r.nama)}">${esc(r.kode)} \u2014 ${nf.format(r.capai)}% (${nf.format(r.vol)} / ${nf.format(r.targetPeriode)} m\u00b3)</div>
+      <div class="track"><div class="fill ${klas(r.capai)}" style="width:${w}%"></div><div class="mark" style="left:${m}%"></div></div></div>`;
+  }).join('');
+}
+
+function setGaTarget() {
+  if (!GA) return;
+  const e = GA.excavators.find(x => x.kode === $('gaKode').value);
+  $('gaTarget').value = e ? e.target : '';
+}
+
+function renderGalian(p) {
+  GA = p; const s = p.ringkas;
+  $('gaStats').innerHTML = [
+    [nf.format(s.vol) + ' m\u00b3', 'Total galian ' + p.days + ' hari'],
+    [nf.format(s.target) + ' m\u00b3', 'Target (' + s.hariKerja + ' hari kerja)'],
+    [nf.format(s.capai) + '%', 'Capaian target'],
+    [s.hariCapai + ' / ' + s.hariKerja, 'Hari target tercapai']
+  ].map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+
+  const msgs = [], ada = p.excavators.filter(e => e.vol > 0);
+  if (ada.length) {
+    const top = ada.slice().sort((a, b) => b.vol - a.vol)[0];
+    msgs.push(`Galian terbanyak: <b>${esc(top.kode)}</b> (${nf.format(top.vol)} m\u00b3).`);
+    const low = ada.slice().sort((a, b) => a.capai - b.capai)[0];
+    if (low.capai < 75) msgs.push(`Capaian terendah: <b>${esc(low.kode)}</b> (${nf.format(low.capai)}%). Cek jam kerja alat dan ketersediaan DT.`);
+  }
+  if (p.tanpaExc > 0) msgs.push(`${nf.format(p.tanpaExc)} m\u00b3 langsir belum tercatat excavator pemuatnya, jadi tidak masuk hitungan per alat.`);
+  $('gaInfo').innerHTML = msgs.length ? msgs.join(' ') : 'Belum ada data galian pada periode ini. Catat langsir dan pilih excavator pemuat.';
+
+  renderGaChart(p);
+  $('gaProg').innerHTML = progHtml('Total galian', p.progres.galian);
+  renderCapai('gaBarCapai', p.excavators);
+  fillSel('gaKode', p.excavators); setGaTarget();
+
+  const ex = p.excavators;
+  $('gaRekap').innerHTML = ex.length
+    ? '<tr><th>Excavator</th><th>Target/hari</th><th>Hari kerja</th><th>Volume (m\u00b3)</th><th>Rata-rata/hari</th><th>Target periode</th><th>Capaian</th><th>Hari tercapai</th><th>Catatan hasil galian</th></tr>' +
+      ex.map(r => { const n = nilaiG(r.capai); return `<tr><td>${esc(r.kode)} - ${esc(r.nama)}</td><td>${nf.format(r.target)} m\u00b3${r.custom ? '' : ' <span class="tag">default</span>'}</td><td>${r.hari}</td><td>${nf.format(r.vol)}</td><td>${r.rata ? nf.format(r.rata) : '-'}</td><td>${nf.format(r.targetPeriode)}</td><td>${nf.format(r.capai)}% <span class="b ${n[1]}">${n[0]}</span></td><td>${r.hariCapai} / ${s.hariKerja}</td><td style="white-space:normal;min-width:180px">${esc(r.catatan) || '-'}</td></tr>`; }).join('')
+    : '<tr><td>Belum ada excavator terdaftar di sheet Alat.</td></tr>';
+
+  const tx = p.tanpaExc > 0;
+  const rowTanpa = h => +(h.total - ex.reduce((t, e) => t + h.perExc[e.kode], 0)).toFixed(1);
+  $('gaHarian').innerHTML = '<tr><th>Tanggal</th>' + ex.map(e => `<th title="${esc(e.nama)}">${esc(e.kode)}</th>`).join('') + (tx ? '<th>Tanpa excavator</th>' : '') + '<th>Total (m\u00b3)</th><th>Target</th><th>Capaian</th><th>Catatan hasil galian</th></tr>' +
+    p.harian.slice().reverse().map(h => {
+      const lbl = new Date(h.tanggal + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' });
+      const cells = ex.map(e => { const v = h.perExc[e.kode]; return `<td class="${v >= e.target ? 'okc' : v > 0 ? 'lowc' : ''}">${v ? nf.format(v) : '-'}</td>`; }).join('');
+      const n = nilaiG(h.capai);
+      return `<tr><td>${esc(lbl)}</td>${cells}${tx ? `<td>${rowTanpa(h) ? nf.format(rowTanpa(h)) : '-'}</td>` : ''}<td><b>${h.total ? nf.format(h.total) : '-'}</b></td><td>${nf.format(h.target)}</td><td>${h.aktif ? nf.format(h.capai) + '% <span class="b ' + n[1] + '">' + n[0] + '</span>' : '-'}</td><td style="white-space:normal;min-width:180px">${esc(h.catatan) || '-'}</td></tr>`;
+    }).join('') +
+    `<tr class="tot"><td>Total</td>${ex.map(e => `<td>${nf.format(e.vol)}</td>`).join('')}${tx ? `<td>${nf.format(p.tanpaExc)}</td>` : ''}<td>${nf.format(s.vol)}</td><td>${nf.format(s.target)}</td><td>${nf.format(s.capai)}%</td><td>-</td></tr>`;
+}
+
+
+function loadRekapGalian(mode) {
+  google.script.run.withSuccessHandler(p => renderRekapGalian(p))
+    .withFailureHandler(err => { $('gaRekapPeriode').innerHTML = `<tr><td>Gagal memuat rekap: ${esc(err.message)}</td></tr>`; })
+    .getRekapGalian(mode);
+}
+function renderRekapGalian(p) {
+  const ex = p.excavators || [], rows = p.rows || [];
+  if (!rows.length) { $('gaRekapPeriode').innerHTML = '<tr><td>Belum ada data hasil galian.</td></tr>'; return; }
+  $('gaRekapPeriode').innerHTML = '<tr><th>Periode</th><th>Hari ada produksi</th>' + ex.map(e => `<th>${esc(e.kode)} (m³)</th>`).join('') + '<th>Total (m³)</th><th>Rit</th><th>Target (m³)</th><th>Capaian</th><th>Tanpa excavator</th><th>Catatan hasil galian</th></tr>' +
+    rows.map(r => `<tr><td>${esc(r.label)}</td><td>${r.hari}</td>${ex.map(e => `<td>${r.perExc[e.kode] ? nf.format(r.perExc[e.kode]) : '-'}</td>`).join('')}<td><b>${nf.format(r.vol)}</b></td><td>${nf.format(r.rit)}</td><td>${nf.format(r.target)}</td><td>${nf.format(r.capai)}%</td><td>${r.tanpaExc ? nf.format(r.tanpaExc) : '-'}</td><td style="white-space:normal;min-width:180px">${esc(r.catatan) || '-'}</td></tr>`).join('');
+}
+$('gaRekapMode').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  [...$('gaRekapMode').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  loadRekapGalian(b.dataset.mode);
+};
+
+$('gaRng').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  GR = +b.dataset.d;
+  [...$('gaRng').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  loadGalian();
+};
+$('gaKode').onchange = setGaTarget;
+function gaShow(t, c) { const m = $('gaMsg'); m.textContent = t; m.className = 'msg ' + c; }
+$('gaForm').onsubmit = e => {
+  e.preventDefault();
+  $('gaBtn').disabled = true; gaShow('Menyimpan...', 'ok');
+  google.script.run
+    .withSuccessHandler(p => { renderGalian(p); gaShow('Target tersimpan.', 'ok'); $('gaBtn').disabled = false; })
+    .withFailureHandler(err => { gaShow(err.message, 'err'); $('gaBtn').disabled = false; })
+    .setTargetGalian($('gaKode').value, $('gaTarget').value, GR);
+};
+
+/* ===== Produktivitas ===== */
+let PR = 30;
+function loadProd() {
+  google.script.run.withSuccessHandler(renderProd)
+    .withFailureHandler(err => { $('pInfo').textContent = 'Gagal memuat: ' + err.message; })
+    .getProduktivitas(PR);
+}
+function renderProd(p) {
+  const s = p.ringkas, dash = v => v ? nf.format(v) : '-';
+  $('pTarget').textContent = p.target;
+  $('pStats').innerHTML = [[dash(s.prodDT) + (s.prodDT ? ' m\u00b3/jam' : ''), 'Produktivitas rata-rata DT'], [nf.format(s.util) + '%', 'Utilisasi rata-rata alat'],
+    [nf.format(s.vol) + ' m\u00b3', 'Material dipindah (' + nf.format(s.rit) + ' rit)'], [dash(s.lM3) + (s.lM3 ? ' L/m\u00b3' : ''), 'BBM per m\u00b3 material']]
+    .map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+
+  const aktif = p.rows.filter(r => r.hari > 0);
+  const msgs = [];
+  const bestDT = p.rows.filter(r => r.jenis === 'DT' && r.prod > 0).sort((a, b) => b.prod - a.prod)[0];
+  if (bestDT) msgs.push(`DT paling produktif: <b>${esc(bestDT.kode)}</b> (${nf.format(bestDT.prod)} m\u00b3/jam).`);
+  const low = aktif.slice().sort((a, b) => a.util - b.util)[0];
+  if (low && low.util < 50) msgs.push(`Utilisasi terendah: <b>${esc(low.kode)}</b> (${nf.format(low.util)}%). Cek apakah alat sering standby atau rusak.`);
+  const hi = aktif.slice().sort((a, b) => b.lJam - a.lJam)[0];
+  if (hi && hi.lJam > 0) msgs.push(`BBM per jam tertinggi: <b>${esc(hi.kode)}</b> (${nf.format(hi.lJam)} L/jam).`);
+  $('pInfo').innerHTML = msgs.length ? msgs.join(' ') : 'Belum cukup data pada periode ini. Isi pemakaian alat dan langsir galian untuk melihat produktivitas.';
+
+  renderBars('pBarDT', p.rows.filter(r => r.jenis === 'DT'), 'prod', 'bbm', 'm\u00b3/jam');
+  renderBars('pBarExc', p.rows.filter(r => r.jenis === 'EXC'), 'prod', 'bbm', 'm\u00b3/jam');
+  renderBars('pBarUtil', aktif, 'util', 'jam', '%');
+
+  const nilai = u => u >= 75 ? ['Baik', 'Beroperasi'] : u >= 50 ? ['Cukup', 'Standby'] : ['Rendah', 'Rusak'];
+  $('pTabel').innerHTML = aktif.length
+    ? '<tr><th>Alat</th><th>Jam kerja</th><th>Volume (m\u00b3)</th><th>m\u00b3/jam</th><th>L/jam</th><th>L/m\u00b3</th><th>Utilisasi</th><th>Ketersediaan</th></tr>' +
+      aktif.map(r => { const n = nilai(r.util); return `<tr><td>${esc(r.kode)} <span class="tag">${esc(r.jenis === 'LAIN' ? 'Lainnya' : r.jenis)}</span></td><td>${nf.format(r.jam)}</td><td>${dash(r.vol)}</td><td>${dash(r.prod)}</td><td>${dash(r.lJam)}</td><td>${dash(r.lM3)}</td>
+        <td><span class="meter"><i style="width:${r.util}%"></i></span>${nf.format(r.util)}% <span class="b ${n[1]}">${n[0]}</span></td><td>${nf.format(r.avail)}%</td></tr>`; }).join('')
+    : '<tr><td>Belum ada data pada periode ini.</td></tr>';
+}
+$('pRng').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  PR = +b.dataset.d;
+  [...$('pRng').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  $('pInfo').textContent = 'Memuat data...';
+  loadProd();
+};
+
+/* ===== Laporan Harian ===== */
+function tglPanjang(s) { return new Date(s + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+let LAP = null;
+$('lTgl').value = new Date().toLocaleDateString('en-CA');
+function loadLaporan() {
+  $('lKertas').innerHTML = '<div class="empty">Memuat laporan...</div>';
+  google.script.run.withSuccessHandler(renderLaporan)
+    .withFailureHandler(err => { $('lKertas').innerHTML = '<div class="empty">Gagal memuat: ' + esc(err.message) + '</div>'; })
+    .getLaporanHarian($('lTgl').value);
+}
+function renderLaporan(r) {
+  LAP = r; const s = r.ringkas;
+  const stat = (v, t) => `<div class="stat"><b>${v}</b><span>${t}</span></div>`;
+  const alat = r.alat.length
+    ? '<tr><th>Alat</th><th>Operator</th><th>Lokasi</th><th>HM awal</th><th>HM akhir</th><th>Jam</th><th>BBM (L)</th><th>Status</th><th>Catatan</th></tr>' +
+      r.alat.map(l => `<tr><td>${esc(l.kode)} ${esc(l.nama)}</td><td>${esc(l.operator)}</td><td>${esc(l.lokasi)}</td><td>${l.hmAwal}</td><td>${l.hmAkhir}</td><td>${nf.format(l.jam)}</td><td>${nf.format(l.bbm)}</td><td><span class="b ${esc(l.status)}">${esc(l.status)}</span></td><td>${esc(l.catatan)}</td></tr>`).join('') +
+      `<tr class="tot"><td colspan="5">Total</td><td>${nf.format(s.jam)}</td><td>${nf.format(s.bbm)}</td><td colspan="2"></td></tr>`
+    : '<tr><td>Tidak ada data pemakaian alat pada tanggal ini.</td></tr>';
+  const gal = r.galian.length
+    ? '<tr><th>Excavator</th><th>Target (m\u00b3)</th><th>Hasil (m\u00b3)</th><th>Rit</th><th>Capaian</th><th>Keterangan</th><th>Catatan hasil galian</th></tr>' +
+      r.galian.map(g => { const n = nilaiG(g.capai); return `<tr><td>${esc(g.kode)} ${esc(g.nama)}</td><td>${nf.format(g.target)}</td><td>${nf.format(g.vol)}</td><td>${g.rit}</td><td>${nf.format(g.capai)}%</td><td><span class="b ${n[1]}">${n[0]}</span></td><td style="white-space:normal">${esc(g.catatan) || '-'}</td></tr>`; }).join('') +
+      (r.volTanpaExc > 0 ? `<tr><td>Excavator tidak tercatat</td><td></td><td>${nf.format(r.volTanpaExc)}</td><td></td><td></td><td></td></tr>` : '') +
+      `<tr class="tot"><td>Total</td><td>${nf.format(s.targetGalian)}</td><td>${nf.format(s.volGalian)}</td><td>${s.rit}</td><td>${nf.format(s.capaiGalian)}%</td><td></td></tr>`
+    : '<tr><td>Belum ada excavator terdaftar.</td></tr>';
+  const lang = r.langsir.length
+    ? '<tr><th>DT</th><th>Sopir</th><th>Exc. Pemuat</th><th>Exc. Bongkar</th><th>Rute</th><th>Material</th><th>Rit</th><th>Volume (m\u00b3)</th></tr>' +
+      r.langsir.map(l => `<tr><td>${esc(l.kode)}</td><td>${esc(l.sopir)}</td><td>${esc(l.excavator)}</td><td>${esc(l.excBongkar) || '-'}</td><td>${esc(l.asal)} \u2192 ${esc(l.tujuan)}</td><td>${esc(l.material)}</td><td>${l.rit}</td><td>${nf.format(l.vol)}</td></tr>`).join('') +
+      `<tr class="tot"><td colspan="6">Total</td><td>${nf.format(s.rit)}</td><td>${nf.format(s.volume)}</td></tr>`
+    : '<tr><td>Tidak ada data langsir pada tanggal ini.</td></tr>';
+  const ken = r.kendala.length ? '<ul>' + r.kendala.map(k => `<li><b>${esc(k.kode)}</b> (${esc(k.sumber)}): ${esc(k.teks)}</li>`).join('') + '</ul>' : '<div class="info">Tidak ada kendala atau catatan.</div>';
+  const bl = r.belumLapor.length ? r.belumLapor.map(esc).join(', ') : 'Semua alat sudah dilaporkan.';
+  $('lKertas').innerHTML = `<div class="rhead"><h2>LAPORAN HARIAN ALAT BERAT</h2>${r.proyek ? `<div>${esc(r.proyek)}</div>` : ''}<div>${esc(tglPanjang(r.tanggal))}</div></div>
+    <div class="stats">${stat(s.beroperasi, 'Alat beroperasi')}${stat(s.standby, 'Alat standby')}${stat(s.rusak, 'Alat rusak')}${stat(nf.format(s.jam), 'Jam kerja')}${stat(nf.format(s.bbm) + ' L', 'BBM terpakai')}${stat(nf.format(s.volGalian) + ' / ' + nf.format(s.targetGalian) + ' m\u00b3', 'Hasil galian vs target (' + nf.format(s.capaiGalian) + '%)')}${stat(s.rit + ' rit', 'Langsir galian')}${stat(s.prodDT ? nf.format(s.prodDT) + ' m\u00b3/jam' : '-', 'Produktivitas DT')}</div>
+    <h3>Progres total volume (kumulatif s.d. tanggal ini)</h3>${progHtml('Total galian', r.progres.galian)}<div style="height:10px"></div>${progHtml('Total langsiran', r.progres.langsir)}
+    <h3>A. Pemakaian alat</h3><div class="scroll"><table class="wide">${alat}</table></div>
+    <h3>B. Hasil galian per excavator</h3><div class="scroll"><table>${gal}</table></div>
+    <h3>C. Langsir bekas galian (DT)</h3><div class="scroll"><table>${lang}</table></div>
+    <h3>D. Kendala dan catatan</h3>${ken}
+    <h3>E. Alat belum dilaporkan</h3><div>${bl}</div>
+    <div class="sign"><div><span>Dibuat oleh</span></div><div><span>Mengetahui</span></div></div>`;
+}
+function waText(r) {
+  const s = r.ringkas, n = x => nf.format(x);
+  let t = `*LAPORAN HARIAN ALAT BERAT*\n${r.proyek ? r.proyek + '\n' : ''}${tglPanjang(r.tanggal)}\n\n*Ringkasan*\n` +
+    `- Beroperasi: ${s.beroperasi} | Standby: ${s.standby} | Rusak: ${s.rusak}\n- Jam kerja: ${n(s.jam)} jam\n- BBM: ${n(s.bbm)} L\n- Galian: ${n(s.volGalian)} / ${n(s.targetGalian)} m\u00b3 (${n(s.capaiGalian)}%)\n- Langsir: ${s.rit} rit\n` +
+    (s.prodDT ? `- Produktivitas DT: ${n(s.prodDT)} m\u00b3/jam\n` : '');
+  t += '\n*Progres kumulatif*\n- Galian: ' + n(r.progres.galian.real) + ' / ' + n(r.progres.galian.target) + ' m\u00b3 (' + n(r.progres.galian.capai) + '%)\n- Langsiran: ' + n(r.progres.langsir.real) + ' / ' + n(r.progres.langsir.target) + ' m\u00b3 (' + n(r.progres.langsir.capai) + '%)\n';
+  if (r.galian.length) t += '\n*Hasil galian vs target*\n' + r.galian.map(g => `- ${g.kode}: ${n(g.vol)} / ${n(g.target)} m\u00b3 (${n(g.capai)}%)${g.catatan ? '\n  Catatan: ' + g.catatan : ''}`).join('\n') + (r.volTanpaExc > 0 ? `\n- Excavator tidak tercatat: ${n(r.volTanpaExc)} m\u00b3` : '') + '\n';
+  if (r.alat.length) t += '\n*Pemakaian alat*\n' + r.alat.map((l, i) => `${i + 1}. ${l.kode} | ${l.operator} | ${l.lokasi || '-'} | ${n(l.jam)} jam | ${n(l.bbm)} L | ${l.status}`).join('\n') + '\n';
+  if (r.langsir.length) t += '\n*Langsir DT*\n' + r.langsir.map(l => `- ${l.kode} (${l.sopir}): ${l.rit} rit, ${n(l.vol)} m\u00b3, ${l.asal} \u2192 ${l.tujuan}${l.excBongkar ? ' (bongkar: ' + l.excBongkar + ')' : ''}`).join('\n') + '\n';
+  if (r.kendala.length) t += '\n*Kendala*\n' + r.kendala.map(k => `- ${k.kode}: ${k.teks}`).join('\n') + '\n';
+  if (r.belumLapor.length) t += '\n*Belum lapor*: ' + r.belumLapor.map(x => x.split(' - ')[0]).join(', ') + '\n';
+  return t.trim();
+}
+function lShow(t, c) { const m = $('lMsg'); m.textContent = t; m.className = 'msg ' + c; }
+$('lTgl').onchange = loadLaporan;
+$('lPrint').onclick = () => window.print();
+$('lWa').onclick = () => {
+  if (!LAP) return;
+  const t = waText(LAP), box = $('lBox');
+  box.hidden = false; box.value = t; box.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+  lShow(ok ? 'Laporan tersalin. Tempel di WhatsApp.' : 'Salin manual teks di kotak bawah ini, lalu tempel di WhatsApp.', ok ? 'ok' : 'err');
+};
+
+function hint() {
+  if (!D) return;
+  const hm = D.hmTerakhir[$('kode').value] || 0;
+  $('hmAwal').value = hm || '';
+  $('hint').textContent = hm ? 'HM terakhir: ' + hm : '';
+  hitung();
+}
+function hitung() {
+  const j = (parseFloat($('hmAkhir').value) || 0) - (parseFloat($('hmAwal').value) || 0);
+  $('jam').textContent = 'Jam kerja: ' + (j > 0 ? j.toFixed(1) : 0);
+}
+$('kode').onchange = hint; $('hmAwal').oninput = hitung; $('hmAkhir').oninput = hitung;
+
+function show(t, c) { const m = $('msg'); m.textContent = t; m.className = 'msg ' + c; }
+
+f.onsubmit = e => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(f));
+  $('btn').disabled = true; show('Menyimpan...', 'ok');
+  google.script.run
+    .withSuccessHandler(d => { render(d); show('Data tersimpan.', 'ok'); $('btn').disabled = false; $('hmAkhir').value = ''; hitung(); })
+    .withFailureHandler(err => { show(err.message, 'err'); $('btn').disabled = false; })
+    .saveLog(data);
+};
+
+google.script.run.withSuccessHandler(render)
+  .withFailureHandler(err => show('Gagal memuat data: ' + err.message + ' (jalankan setup() dulu)', 'err'))
+  .getData();
+</script>
+</body>
+</html><!-- Form "Catat hasil galian" + data total volume galian. Disisipkan otomatis ke Index.html oleh doGet() di Code.gs. -->
+<style>
+.gi-hi{border-left:5px solid var(--y)}
+.gi-note{background:#fff8d6;border-left:4px solid var(--y);padding:8px 12px;font-size:13px;margin:0 0 12px}
+</style>
+<script>
+(function () {
+  const pane = document.getElementById('tabGalian');
+  if (!pane) return;
+  const sec = document.createElement('section');
+  sec.id = 'giSec';
+  sec.innerHTML = `
+    <h2>Catat hasil galian</h2>
+    <p class="sub">Catat volume material yang digali tiap excavator. Data masuk ke sheet Galian dan langsung dihitung di grafik, rekap, laporan harian, dan total target.</p>
+    <div class="gi-note">Jika excavator dan tanggal yang sama sudah dicatat di sini, angka ini dipakai. Jika belum, dipakai hitungan otomatis dari catatan langsir (excavator pemuat). Tidak ada hitungan ganda.</div>
+    <div class="stats" id="giTotal" style="margin-bottom:14px"></div>
+    <form id="giForm">
+      <label>Tanggal<input type="date" name="tanggal" required></label>
+      <label>Excavator<select name="excavator" id="giExc" required></select></label>
+      <label>Lokasi galian<input name="lokasi" list="dlLokGal" autocomplete="off" placeholder="mis. Pit A"></label>
+      <label>Material<select name="material"><option>Tanah</option><option>Batu</option><option>Lumpur</option><option>Campuran</option></select></label>
+      <label>Volume hasil galian (m\u00b3)<input type="number" min="0.1" step="0.1" name="vol" required></label>
+      <label>Rit DT dimuat (opsional)<input type="number" min="0" step="1" name="rit"></label>
+      <label class="full">Catatan hasil galian<textarea name="catatan" rows="2" placeholder="Contoh: material keras, ada batu besar, area berlumpur, alat sempat berhenti"></textarea></label>
+      <div class="full"><button id="giBtn">Simpan hasil galian</button><div class="msg" id="giMsg"></div></div>
+    </form>
+    <datalist id="dlLokGal"></datalist>
+    <h2 style="margin-top:22px">Kontribusi per excavator terhadap total</h2>
+    <p class="sub">Volume galian kumulatif sejak awal proyek.</p>
+    <div class="bars" id="giKum"></div>
+    <h2 style="margin-top:22px">Catatan hasil galian terbaru</h2>
+    <div class="scroll"><table id="giLog"></table></div>`;
+  pane.insertBefore(sec, pane.children[1] || null);
+
+  const f = document.getElementById('giForm');
+  f.tanggal.value = new Date().toLocaleDateString('en-CA');
+  const msg = (t, c) => { const m = $('giMsg'); m.textContent = t; m.className = 'msg ' + c; };
+
+  window.renderInputGalian = function (p) {
+    const g = p.progres.galian;
+    $('giTotal').innerHTML = [
+      [nf.format(g.target) + ' m\u00b3', 'Target total galian'],
+      [nf.format(g.real) + ' m\u00b3', 'Sudah digali (' + nf.format(g.capai) + '%)'],
+      [nf.format(g.sisa) + ' m\u00b3', 'Sisa volume'],
+      [g.estHari ? nf.format(g.estHari) + ' hari kerja' : (g.sisa > 0 ? '-' : 'Selesai'), 'Perkiraan selesai']
+    ].map(x => `<div class="stat gi-hi"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+    fillSel('giExc', p.excavators);
+    $('dlLokGal').innerHTML = (p.lokasiGalian || []).map(x => `<option value="${esc(x)}">`).join('');
+    renderBars('giKum', p.kumulatif || [], 'vol', 'bbm', 'm\u00b3');
+    const t = p.terbaruInput || [];
+    $('giLog').innerHTML = t.length
+      ? '<tr><th>Tanggal</th><th>Excavator</th><th>Lokasi</th><th>Material</th><th>Volume</th><th>Rit</th><th>Catatan</th></tr>' +
+        t.map(l => `<tr><td>${esc(l.tanggal)}</td><td>${esc(l.excavator)}</td><td>${esc(l.lokasi) || '-'}</td><td><span class="tag">${esc(l.material)}</span></td><td>${nf.format(l.vol)} m\u00b3</td><td>${l.rit || '-'}</td><td style="white-space:normal;min-width:160px">${esc(l.catatan) || '-'}</td></tr>`).join('')
+      : '<tr><td>Belum ada catatan hasil galian. Isi formulir di atas untuk mulai mencatat.</td></tr>';
+  };
+
+  // Sambungkan ke render Hasil Galian yang sudah ada
+  const asli = renderGalian;
+  renderGalian = function (p) { asli(p); window.renderInputGalian(p); };
+
+  f.onsubmit = e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(f));
+    $('giBtn').disabled = true; msg('Menyimpan...', 'ok');
+    google.script.run
+      .withSuccessHandler(p => {
+        renderGalian(p); msg('Hasil galian tersimpan.', 'ok');
+        $('giBtn').disabled = false; f.vol.value = ''; f.rit.value = ''; f.catatan.value = '';
+        const on = document.querySelector('#gaRekapMode [aria-pressed=true]');
+        loadRekapGalian(on ? on.dataset.mode : 'minggu');
+      })
+      .withFailureHandler(err => { msg(err.message, 'err'); $('giBtn').disabled = false; })
+      .saveGalian(data, GR);
+  };
+})();
+</script><style>
+body{background:linear-gradient(160deg,#07183a,#0b2b61 55%,#06142e) fixed}
+header{background:linear-gradient(100deg,#07183a,#0d2d66 70%,#123a7a);border-bottom:5px solid var(--y);gap:12px 28px}
+.mh-brand{display:flex;align-items:center;gap:14px}
+.mh-brand img{width:98px;height:auto;display:block;padding:5px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.16),rgba(255,255,255,0) 72%);filter:drop-shadow(0 0 6px rgba(255,255,255,.4))}
+.mh-brand h1{font-size:30px;margin:0;line-height:1.15}
+.mh-sub{font-size:14px;color:#dbe6ff}
+.tabs button{border-radius:20px;border-color:#2c4b85;background:rgba(255,255,255,.06)}
+.mh-clock{margin-left:auto;border:1px solid #2c4b85;border-radius:22px;padding:8px 16px;font-weight:600;font-size:14px;background:rgba(255,255,255,.07);white-space:nowrap}
+.db-k{box-shadow:0 4px 14px rgba(0,0,0,.35);grid-template-columns:56px 1fr;column-gap:12px;align-items:center}
+.db-ic{grid-row:1/4;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;font-size:26px;font-weight:700}
+.db-k .db-pb,.db-k small,.db-k .db-sub{grid-column:2}.db-k .db-sub{font-size:13px}.db-k.p{background:linear-gradient(135deg,#4a1f8f,#8a4be0)}.db-ic{grid-row:1/-1}
+@media print{body{background:#fff}.mh-clock{display:none}}
+</style>
+<script>
+(function(){
+  const h=document.querySelector('header'), h1=h.querySelector('h1');
+  h1.outerHTML='<div class="mh-brand"><img alt="Logo Bumi Hutama Karya" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANwAAADWCAYAAAC6weznAABRqklEQVR42u1ddZhj5fV+v2RmVthlYYHF3d2KQ6FAKbbFtbi0eJEWKU6hxUtxKQWKQ0uRUig/pEALxd0dFtiFXWR9JvL+/rjnMGcP300yM0lmMpP7PHkyk9xc+e73HnmPfEBzq9pGMpDMkMySbCGZSdlvEMk5yx1L3m8jOYbktyTvkM8yFV5PRt7XJ3koyU1ILtnFe8rIKzSfcHPrCyDLlAFXG8nFSW5B8kSSN5F8g+RLJIdacEWAsgzJDnZu7SRXke+yFVxbVt5vlN8XSY4juUAlwPXfN0HX3Poa+AaRXIrkViTPIPkPku+QnMb49uMYeEi2yPtJst90ARsr1XJGQ2ZJvkiyQHKqHONwe54y2nEpkgs1n25zq7epmLWT3EzIlUn+juQ9ZcBVcP8XSf4mBXCBZKtoQYqWy5HMy2vdclrOXN88Yo6qhiySfFzOEcpoxh+RnETyK5KvkDyjqemaW63Blk3RHKqF9mP6ZoHyLcnHSJ5P8mckVyA5c4nJvo6AIy/vNOblP8tpOXOcn8hv9DoKojGXSjEb9XcrkBxvfkuSN1dqzja35tZTU3FPkjtZIkH+XiKiuT4g+bxMbp2sT3cF4CQvkt/lSX4jZmFRQFcg+aNSk98IhF8Z7VYwoD3Rm5XmnuYj+Z4Buf72wHKmaBrp0pxFza3SyfJLITlIcizJkQ5wLSQvFoDsRnIVkkONKVeU1ySSi8j+rTHmz2jP4SQ/MZrt3yTXNIAjyQdLaTkD3L8Y4OTN718TQic4sM1C8lnzGys0ftQVDedM8GwTeE1AZcqALZC8XybbZHk/rZJJJ7993JAeJLlrKQ0hkzKQ3F72V3/wd/L9Y84X+1EZs9f6gTmjgdVM3cAIjYzs/4DTiHn5f5KSJ5UAxwB+MZJLNGdbU3NlKpwwqxlfrCAEwjwaczPHa1EpTrJVPj9dJquyg1eVMQP1eHc4YK0rx97aAfghex2R4yxEcoohbJ4l+b7RnJfIfm3yfo05fsFptzfNfYUyY6fm7BokPxewXkpy2SbpMrCBt1CFTN8DDjhnlgGOJyzajRkXnbTmXAuKKaqa5Tm330MOdJv4azHn38xpypONb1gk+THJ4bLvGe64yogq4O6sRLsZsK0rwskytO0k9xjIxEtmgAEsiCZajeR1AF4C8OMSE0BB8Ud5bwFQBLA/yXkBFFMmYFHeXwDwJYA2AAUAiwNY2h3bP4udAcwMoEP+f47kAiRXJbk6gOf1duT9WAEvI9e9jNv3dQC3yd85APMDWJvkPgB+A6BdrnUsgBvkOHovL5abMyRbQgh5kpsB+CeAWeU8BDBNjj1fyv03t34GNpX62zlW8b+l0pdMDO4Zpy3OLaPlgtOO+ruDYn6cSQt72hEWk0hONFrSUvyqfX7q7lHfb3Aadi1hXL8UDVcQNnKqIVQKkgp2ltN4oytkRbeV31iCR9nRIsl9B7KG688+2gyBXWOyjRJTqsNMpm3SJoGZvLs4IHxNcv6YD+Um4CnOHL25hAm4iomVFYyvVSrOR5JPGf8xGCHxvDEfJ5KcX87zVwfEovn7UNnnaWNatpNcOs2kNPe6q/F19XjjXThi5ybg+qEm85rGTexjndZ5QSnyGFUvrzbxwYrmd2dXANQfO3C8T3ImpwVbnB9lGcKJJCeQ/Ezie2/J9U52E3lrZSblfV6J36n/9Jz5bme5j+lO8Jwv388tWpDmmtPyPn0CQN6Mz3mShWPHeqsm4Pof6BYgeSfJXdzkVw0wm0xgK9l3rQA8hzpATCA5TxkSZHaSXxhTsEhyHa8tBNAvO3DuJcTOAhL/G0pykOx/vpvITytTKt9v5L6/zgiQWQSMltC4xXy/nhub+8uA7RADNgXvjfLdBe46Nm0Crv8QIkNI7iFUNGWiL+YAoBPyZOOjFGWyt5Xw4wLJESYgrRPrpBJAVQ12vzMrf6UT1lzPD53fM0bBlXLMRcW/s1putNnvCPlsirwf7TTgkSSfEE32EMmZzLXs7673PAewYPb9lREmeh23GuF2szNf120Crh/4bPK+tjGDdLI8amJkwUyEUQJIK8n3rkDLHevIhNdMHCtNAxzjrukfRuPqcS+Ta1FT8TYDyhl8UpdFolkseQm02+/yAriiNeWcmT0HySEOjJe4693HXEsw93W8A1tBzjvY7Huny3RZoZLwQnNrHNBdbCSqAumMFBbvDGPuFMU/Gpriy+mkn1PiS0WTCBwlFMw1aVqWmpTjSc5u9pvdxKx02y3GZrprWTVCpPxUvv/cfb6Uu6aMA14w2usJA5IiybUiGvk0B7aiVEvMYYWUCDwaxnXhJuD6j0mpZuWzBnTKmm1kJby85hU/zLJqP6/ARHzAabmflCJsxBT9yJldW5j9thdt8qnQ9I/rxPWgsC/Dnv5C6PhNxOdrE616k/h2/y1BevjjzSFFqkWTPzq7MyNPd9UQOSPgPhJBpkWurxjQj1NBU41sE2uxNBFQO7o/U6KOS6X3ssa/0fSo983EsZPnLOfLvSP+TKYEEfKQ80s2KAFS/c2/zHk+NiRNRkic+eX6hhkzMtudCeVCDkHuJ1TyG6mBU3MyJ2C1aWxnO7ClbRNIXiGaVsH7Mclh1QBcsxq9znR/BRNnv4gzf2PEL5rf0OcKoP1kv0EG5G2GAf3WxMm+Jjl32kM3E3UbkkdLweoIm3/ZxXFoFS0+VHyltkonm4nPtUR8uazRtt8Y4Nxg9jnTgE3H9CupcD/b1M8VXcGtAvN1S7z0YC60GE17USOBLjQI2EIIgSQXAXA0kjSkrwEghMDYA5EUoz8B2BdJehEAtALYP4TwJ51gIYQCySsA/BxJalMrgM8ArBlC+NQddySAWwFsDGA6gMEA7gghbEcyE0IoppihIfad228OAHMhSbdaEMCc8v8oALPJuVoBDEKSIpUBkJdrni6vbwFMkNfnAMYA+FTu54sQwqSU61NtoWM5F4CVAKwP4EkA9wG4UMZousybNiTpWqNDCA/LseaXffaTYwBJShuRpMU9FUJYU59nd8Emz3ZXADfKx3+Xc6bOiebWBbAZyfupy7pvSZHiyrYtb1i/nCnmXNxoiyAmaIfThq+LX7SwHOeXJN925ucUqYwOLqammiRmYg4muaQc+ySSt4jP+XkZE60n2xSSHwoZco3cywaqmSt4BoNJ/kYYWdvQaLQZx6xjPo+WQL21HB7siSZyZu80F2R/tCvavrmVHuCfuwcdTRGy/g7J0fLA88ax7zAFnVkLCpLnGjDZTlmTHRCmmSDvTo41zEZ8i8EkVyR5gOQ2vl6i70nRXKeSEB2OnEh7dbjftRsqPm0bLyD8o2SfLBLxmVvNmA4WwXcfyR290LO+sfx/kAsv3NpdhtI8pyVMIoEdl53T0uyaW9ep/mWE4cqbLI/xtiDSUv4kfxvpA0JX8Xyy8+faSN7lgDXN/MYmD79pOm61RtjJUeKzXSn7xiZ9zoEpH3nZfTyY2iPg6jAgy5u8zLwDchoQp0pe5hlSXjPYE1aliAvnZ2ZN6ECD71d2xR+PhEFGuMZK+iwPa4Yaqq/ltjYT9TsTxYFtaZIPm/2Utv/QpE3lTDxsc+eEt8kkmZCiEV4ieTjJWSKU/Sjpe/J3EQ5ec1kwFAyxkIuApZpb3oEylwLEmDn7pmj+tXyytdV8JUiNKxzgLkhzBSogerIk73V9VkjyHAdyJYVafMijSZp0AXRCblwM4GBHghwdQjhH4mdnAxghjn0rgCyAhwDsIU7+8/J9Xr4fI+TA15bYkBjSTwCoifUZgJcBPBlC6HATa0MAOwHY3BAFkHMUhZDIoLO2jPLKyPXFtmkAvhES5At5nwJgsnynx1DCow3ALEjq6IbJdcwm/8fOQbk+plxfUX5nf/sSgDsA3BZCeNMJxKIlKpRAIvk3AD9FUts3FMBJIYTfKvFRof+eFZLkMgAHyLEyQsL8VcY+hBAKlRBvTcBVTpwEYej+B2AFAV0WwCQADwPYxkzWITKhzgDwW30Yksx8kwPsDSGE3XXiAMhU8PAWQVIoujOA5c1XetysXC/NJM7i+8WbkwB8COB9AG8CeEf+/gTAeABTLcC7MF6DBYBzAJgXwMIAlgKwJIAl5LM297OCvBR8CsCiTO6MGd8HAFwN4F4jpL4DnmGV/y1MZ05+/8sQwiVdAJwykscB+J0BW1bY4e2NKTkSwDxIClwXAbAYkgLcyQB2kd82GcxumJZriKmYcz0bc8Yce8MEo4MzO6805Iv6APu7c2iMrE0ZT/l8dZJ/No1VrV+Yd31AYibaJ9Iw9iSSm0tMr6UCkyoTMZfsK1tpkFyC4EsL+XGmBPHHR5rW2iydgiOdaHqk7KvBbGNuqim3nOSI6vG3r9SHM2bpbuZ55U1t3+9J/oHk3XId40qwvFc0Spyur4HOJwO3uwmfJ3mtxMu+S7Z1E3cYyVcdezaG5Kxmovg8w/WlaDPvij/zxhfLRx74dMnUOFVo+BElSIEW14go9IA+D5GFRUqtfzCXsLoXm7boFnw5d685NxZvkTxKfdsIe7wQyXNI/qAScsMIvrVNNboFfyGF4dXavukmv1O3Y6zgbW5dc6AzJP8ZYasujj3wyINcy/zmUam0zvjYmeQm3mceXCECtA43AaYImXNIbKWaSIev0AtjaIHo09eykhR9ioAv1km6aNrtWa33nsT4hphjtXWTmV5EBKFndPMG9O0lSKYOCR+8Kml151crrawRQdOTtB59IPNKYm3RSLN3pWtwpoIGqUeK5slE4klrGUbMA60QmWja5uBIrb9z9/u9VKo+Ksi+t6iIaPdLpGDXa72iiR3asMnLaj4aBrGlkmdr6P8XnCXhtZlquokSV/2TBOd3l8D4MlLZ0TqgNVTs7x74c5tHHvhd1pcoBVr7kOXvJUleZx6wbawTA9pE8enWi2T1tzRiXMhoQN/kaDaSe5tyGxuo91qHJmyzbimrI4X+vzviZ98qxcW/cgkQd1QI5MyABJu08R5eiS1foT93RuThHFbBA86ahOQhJE8wZEghArScM52O98s4NSrIuqH5NnA+rR8vSxrlpbfJyFKC0Fgaf4zUM95k9hvtMn4uluscFCOQBiRRYsA2iOT/SY3WbJUyVmUmQ4spmGw3Vc7LpYHa+Wkbm+5WjJiOOUcOHGLJD/OAQ39/ht7nI/kDktc7cHngFY2Q2iHlGajFcnxkPbzHTAV5VhIPLOF1kncJmmRHZ+rUzWbyPm9Ss1q6e1x5X8a0GdAH9bg8qOCYSn24o0xbAwvWgjsOJWn5wAj9nRmgz9OvlbeqFLt6cqXgkpcpYZnZXQhBn+OBLs/0DZKj5Ls2Z9Eo4A7oKeD6lSY0E/wPZqD0AXxgqOKWHh7/YCMdfdNVzz5uK+lejFDOlk7+RCTqMGc2NuM5Ed9IGiE94BLNY2bmO5qLGvGjN5DKiQmmLYRNMr/emZSbdddSiiRbh/7wUDQmtJopt293BYwbVwl0dztJOrdbXGNm0WqxCWEJkWmSQzink+qhStoh9HPg7SnC1Aq0otN2RQlet0ZAtYSP2RlAPuYSHVbpKh8Qi8fZHjP9yYeb07Bc7W6C79rdCWkeylwkn9R22g6M60lpjE1gLrg2c5SWdivXQqP59dL6s6kpNXEXuaqNomM2dQWgBc1YZyPP1S6/9ZYB7Demd0qmAsHvq9xnkd6f/5HjjmrIEp8UFkon/kwkb3dBa30oh/RUCxj20sbVDjOgak9hH8foyi7V1kTm3jcRqT5Tf9V2KaTUq4bNjPnJH7smT5mU9dTnMrVwlNjgiBJzLo1lXVmew4cuvndDT9nz3tRmqU145O9LXRaBSrzfpP2+C+dWB3u4sfl9sNZqtetlNRzUQsIZwG0l53tFS4P6sbazBNXMZpksuz5D0TGcR6SYqAq4pcVH17nyoteCMd/MkGQ/F5M0567FZivt1DDPxFYGp00mt1zvyS6OowPxxxhIK7yGVuMHPJOS95gzEnKXWk98BzibNXGtMYn6ZbWy03abS/c0b2LmTXrchRGg+fX2pkQa6oYIOZYhuaEkJ4xzOa4FY5paAfxYQzwLQ47MJHGxy0jOGjOdHBW8jzEtZuiwpcDtQseuFsd0WRPSP9h7je9QU9MuslSWldJjtUtYPyZVrLabUyom7KKPRedL/92Yirb6YAlnnl4soBrszje/5HQ+7dLRprn2Evea/jTq02/cEBrOAOjP5qbe0aWgItLOtszeVNrN+QyDf5uGqC1lHqgt55iW4qirRDu+nuaca0FnTSpr1j6gzFx/JlXM8zrVtZvwMbunSM7nhZCkmN1h3Q9DqGwugnqCK58quPjv0WJinuQa+l7bKGDTgTw8AhpKp6i5U+xzBcoqknzsf/9qmbXJYgtLWIlVdMTIZvU24SKAy5UIR5zssu37bQhB+r585YSQBd1bWnERCbYfI9bRopKW96rL8ZxmjvmV5GJuYubbcq7lxJdCyjSEOelXpGmPBDvHkPyZB5oD3XxSP+ZB9xnJ1SLES0jpdR/L6n/U+EstvTQ+20QAV4iU+bxEcsv+qu2cRbKiCde0G4vEMpjLOfNSx3Mdo51oauH8gpVPOJO9zYSnprmFKLONMoDquD5QQmJp1veCEV9OB3GYMRlss5jJ2sbNOsny/7kp5IgO+J/NumrZXhRIMcAVzcubmVfYrs79jVQxoBtF8pFI2Eaf/ackV3Kg06LaW1x3Z10r7w5XVXCcOe9BDmxP9PUSqlI+3AKingvOrLPaZpykYvkVQDNmcl3q7OvLTetxC7bzIuRIwZASp3WX8awB4LZ2gCumvPLm+j+VxTpCfzQzzdgMMeDpiCQljDVLXdkA+6ySGD1J+n5uapjq+1wy9KpiNn7j2h+u2pCWhBm8nSLxFjoAUVrarerUvbXx1Se7M8Uc+X1EKtrzHdgXJmmKhitW8LKWwb/VrO5vZmZKfNZWbXQY4bN0hEhZSrtpO8Z8TsmHzZtFN//PzcNzGno8zeS6xt3YRyKJyBnXlZ4uTm9bCuh+apjKjAHbbyIPJmcAuINqz97WCJGwQKWA837odCZrZg/vb9rOPfPzSwTI3zVJCr73TDayBuDGkR4syl6/LckRlTRfyvZJUBp/boRzhidJxfD5rrtxwdjd68ceQESzHZ4CtqJUI2zRG+RIF1nKNIClvSyp8prLVGnpJ6Ar5yrkDKk0u50npeoemazNnncdqmkaAWfLCILQ1wfOt7RrN1puqPgyH0S0XUEAOat9AA5sO0bYyD4LNjceO1QAuHwK4GKkSr/LVHGgi2k6vf9HrE9fwbHedBbXjaXAFhH4G0sFytC618+5tm62rD1rJI46rr92BYP/MMzU1U7b5U0IYWVzLh20DUyWRs4RM+1Kpfc1iW+uf8cKTEqmtIVLI1XGadJ3fzEzHVAuLBEyuLaU2+DWCiyYIuMvpAlViK2X4BI0VjeMJ0ke3Gd9PsMo3u9o2BPMPlsZ307TbJ7h95e5XVSYKrr6KtV02/dV86oLGq7oMtjby7CZVtv9n9aG9QdSxT3760qEDE6OPXfjD84nACtGFtzMxs4n/y8pPETeVbGPq1sZj7mJDSS2dYY0AN2N5GbSXm45afw5i9Fyc4s5WTBUrK05m90s/DDe5ThmhDJ+2jm81rz6hezf2kcnTyWAU/9kb7cWXr5E3K4YIVXOJjlzw/gflfEBLST/4cxLe987RgCkc/V2J+wfclaTB9qC0p1gYmTxGD3f+TUXaq6b7/MlVmtpl+5XY8VufkbapX3gpPKzYg/bVuLbktzUgE39tr9EJL4e5/i+DLYU0iRfAnD7yL5zGYrc91xJ03ZF0wtk6/5AqhjgzEzyuQjotDflchEXZGeXLD451rZB/p9TwkwTTHrY1EhJUV4IwEVrquXMTewuJ57qaol8t6tiytJJtvDwcmODp6VsHRExJxRsV/cV6r+KGm5PNxE2MhPNEwgx0sXG7q6rZZ1fL4zfQlIFUjRjaGvjZnKAW02S4nVMjpHP28yxZ5Z47xjHJ+j2uWSmbOnM0itrquWMpPlTSi/CtJ7vaW2oSfIMN6A+BreKkU6eGn5EcuL6PElQAeCsENlLNbb53SBJ1p2Y0nI8Bt6cmTCH2KyeRjQzjbWzoVts0oLgqkg8TpMwnhTXROfWUBmXdyLdxijZKGeRnMtcw98ds758rUEXpPXcr0Q9x/o43i1+3fliPz8sJuiH4rx+I797PUaxGrN1JreIopVmH2uDn0aQ2hWylN/5cG6CWW23tHno5bSdJ1Ue1nzERiVVzJgcXCIFbGcrvOXv00iuodpNqgxecxqt3Zjld5Jc2Jy3Teblyi6Od2fd5qBkeT8cefhfSdByJrf/ULGTFyS5kjV1UibnxRGSRM3R9Rtp0kR8ikoAV4pB29V1xeook5fZYUIzp5tFLRouhGBAd62bHyr0x5GcxwhuBd1gkrsId+CBRpfo/C9jZfjk+itdmGLtmoPO3HQQtTw+krE9VidPDFhlwDY6IsFyroyipYEmSY8AFwvGSiHmH40Zn6btYv02X27UTBUDpJlNJpMv6L3ZEm+y/0YOaNNdp7Zrnbuzs3t2GVN1Psk8rzOrPoYpaTO2eedioobpgtwUOncpM1itjC/QrgM5m4QQbBHpdws6NCLrVi3AxcxBWSnmGVc9nZYulo8UBs/faKQK0xfntIJ5T8cLtEqs0uZUPmuANUjyNPU4b4pV1sIZF8QcLlpUhdctNbO2UtYTs4Wk+5rgtE3Z+obksbZHSQntdkmEhi1KXGqORmTbIg58SZaykgfomNxBktHzVaRXSAx8llQZq3HMRjIzzb2fkjJfvjAV3GqRrWMqyfcxn2u8eA+X/nVU5LxHGi1ZJHlBVQEn6F7Y36wrj7CmzvwmM8Bru+etKRMZvHVNoNdLrO0a2NnvCmmyR1fu02m7RU2gN83MLKQ0wH2okXqqGItokEuKsHPmysgYbarVFlbAmPUvnjLHmiR+33CSizNZxTXnLIXNqjJeBkCLi+R8VPr6zRMBXybi2P/UdMnNudjGzVZbmYF7NsUmv6VRwZZiUnog2Hvds6v3aqW4/L+dlJ7E+nEWS4QkYpkqmT48rhkTb7P9SYpGcK8d09yR/1sdAzrdmI2fmtZ8BZe10lKVjB6jbo91MbQJUlk7muRQb+K4GMisJC8wFz5FBmKsKa/Q8+wfkVIFMQ3ma/DAbYthFz0Z5Cn8PborXJylMQvJM11aUrkQQsGEbEY3grZLqSyw4/kfI9RDijtj139/2lkcHcZMn+r6zkTr8rqrroM4jR8Zm3WqA9+bUhC5ckTr2Wi+z5bY3vqEAswPHdD0hvdtZO1WBnA9NikrMDPXMAtgsAJt1+4skUVKkWd9QcsZ1vJdR7bpmO5egvm1vvCtrvTrs0jSxnQJDYysCtgsXS+R+aMjuZOeVs1JvuSelIUWLS1rHPuzhLUM7kZ/m2JKPlU1lT2AABeZSFlZX+HLMqRKrPxnvBT8tqSFd/qQltve9aLMmQqMESnt9/W+znY5qyS5plhyV0rY4Nckl3Fg13OfJYxxqIY/l5W1vy6SLA86NZtzCyxcTXKtFInr4xrzio/oF3ooNFqAuwLA7R5pUNstlrI7IR2SC5u1FippZmRJlf9KskPoq5pO3v+VQqAcG5mL+pvDI13iLiujVS37+YuqZZ5E1gYYKfTpv5z50eGIkaJQ/IN91N8B7+wU2/v2vmrG1Bhwe9VCyDhSZUvTOLVYJmieN67E8f5YfVDLrR7pTVoQ3mBOV/UShMjS8Z9uagtbTWlQ1gbR3TPd0rCWOZJrVgN0acv+LCPNfP4XMTl1At3inFb7mltIGJ8APZ0l1uhuYMDtVguWsov+ju3/+XtHquRTQghaqXFYXwWc01i3prgoJzhGci5JCC8asL1u+6WUAfdKUo1gf397teNyaUzPGlK494kxV/QidnMXqu8nOImvIP1zfzAlI4DbswLA7VHre4+0EHjYLXoRSwsjycP7OuBkfq5gVsjJO19uuGkkmzHd5bT1wtKlxt+Aeh7TqaDdCKbNa6YobNs689nspoRHYxmPW/pV/h5hUrhs45ypUt7ebzoNG8DtWwFpslc9hE0kbnqgECSFEtfWpwHnhPmfHBhUaOi679qWcRHTT2f9cmCTcRtmrLr2iP+d6Q6Qsuz6usnWT3jW+AhfGjWt6nyvFO12Q3/Sbg5w+5foVVJXwHlaXf6+I8XH7GggwCkolpa4r9dyrwpjbkmP80j+qtS9GcsuQ/Iu8xw7XHFrybGJrkYTQiiGEAohhKJVv6UOJL/Jm1YH/9RDAmgFoEHygpij+5ufF+VacgDOZz9chteMBQCEyOd0+9RlCyEUAai2a025PvTGtfXkfkIIbwC4R+ZVEUBW3pcFsFEIgSbMcWwI4VySmRBCPoYJAC0hhAKA8wD8FECHfN0K4NwQwlkks7HfpwJOwEaSJ0rd1FIhBIYQ8gK+TAXJrZTvh5qHNxnABAUzgLUBrGkGoiDXcl8I4XkZsEI/BlwMaCgz2Wt6XTLe5QBVbJBx1jG8XN6z7vq1bKwo8ztnwBq12kIIOdHwhwvYMgDaAFwbQvi1CKzKx8cEu2c1iyNOFYr0IJtxoCZPCnmi5sl/jCP+oDOtro1keJPkJv3NnCzjw8USiffu6Rh0NeM/YlLmUkzKg/u6SelMwIysjONjjpNMZzjfLj0TybNsEYa54Ap+bzWlPxW1rshE/t4awCyildoAbAzgEgAvyWoke5OcS0zOgmhEBV+baMKVAawmJiIAPGDMyVEAtjSSR7XcywAeES3YH7VbzbWX+mP6XDCwt4xorKucdZEHMAzAzp1WaOdYGXeKwnaeAuB5ANeb47QA+BbAlXKenFiBNLG7TKVS7rJI27uprgvXF4LuHbUtuTlOq6GZtSZuCfP9vimB7uMaRXr2QMPtV0LD5bqr4SKM406m3V62EqDK+50pGq690artncU21oQ88mZ9hjYzfraY+jCpBOhwiR3triqhICTM+VL2M1t3LnQoyfWFuXktkrg5zX32iaRy/UwyKR5xRXx/dXTtvRFqfArJxbpFqfYPkzLWl7KlwmNboC1l1li7oNLjGMDdlRK2UMAd1khCMRIisP1xiiTXke8VeCea5lg0Yar2SBJzzgFSO6TdTfKXJJfv8jhJQd4GkkP5QSSbZFqJZrB5+X5ZIz3mkyaxtl6JJO/rr2BzgNurAg1XEeAcnT9cKp8nmolyVg8BFwtZHNJogBPt9WOnuRUo58p+ujrugfL5pMjcfksSlK8yFTR2vvv9CySPKGtlmHiDD2gPF7V5lWuaaUt3fBXBfk6C7J2SWLq/L6KslX/Ty4Dbp6ekScR83NI006EplDy7BoA7uMEAp4J+JtflTM3KV1x+5LyuBO1zyUTZVNuDGCxsIZ2x34g0O54kz/TuLimSEjmUs0pb8hvEn/PbpyR/ZqSM7/NuSyAmmkY2mVqBLfZ3LwDu55Eu0oWURrDZMubjksZ8tLmQ7V3tJmWez9/KsJQNZVI6s/KqiDDJmWaumu97r5SQ7UpZCNSxlR4LgySt8SRh5qeYZ/KB6eMTIGxLOqWWsDcF84OMfP41gDsA3CENWdcBsLywcK8DeDCE8JU8yKKwN7Mgib8pI6rs5JMhhE9MjK7qAx5CKJA8CcD7IYQb9LPeYM4q2KeQBgi5j2EAfi3xoJmFdbPPstANRjS4ONX3LqEeLGuNt7sB7GfuIY8kaL0xgFeEbcyT3CGEMDUi5Ioa1HZYaAfwlLxOY7L08SbCxK8BYDkAz8p52d1JHMotwRpJVP6Ji4eo1DyiVlLTaJbRxjZfqd6azlzHQSmpXbZv5K7O/7BabVtTVpOWk9neDZNSn9FtZVjKRtRwalaOlPZ2dPzB3TErqNJYplvhx8ekF9FW6fpdppwfF4spiOYjkpSgVlGrraZ2yMbS9CI2cFI0K1LmkTLStdtmpEispQFcK5J/GICbpTyevZhCFiLaoiCfqa+QlSyIgpSB3APgb0hSkzpk/5bIcYLTShUNl9PAdC9045h9YtPYWAjhKwBPmLmm47QKyREmjVE1UZD5HcodX9MafRwuhPB+CGGswUw0l/K7By0HsWldwUxmPUkuhNAu6TFUEzJiIq1lJoTmTr4jJmhVH6a5zuEAbgEwUs6ZA7CUABAA+kLrhqK8BgNoB/C5jG+HNAI6QybKliKg8gK0cho600UB4J9BTCg0aoxUx+JBc59B5uY84g5BzEradEaT2NFSidYzuCjGWjq0RLRCQRy99QEsCGAqgOdDCK/rZJaDLYkkH3IEgM8APBFC+MzsQ/M+G4BlzM0rCJ+SiVU1n0puMCva7XIAK4hG0HvtADAawO9DCMeKeZSvl4Xj/i6a67oXwMkhhOfkPnYGcBqAxWXfPDpzAmt1XaEEGBvZh9P7+58RWMpPZGUe/0fnpqQx/kT2fzOEMC3iU2esFRDL7CnJSRimagtHM2sQ+1ptiydBcd/Ba7x08GqLNAla11GyHa4jV9Ukp/GXjkqh4O35d6+HT2Ku6UCTo6qZO+/pdcg+S7u28eWWHU7rMdmdsMDfUsIC7Y1SnlPG4hkqnb184Fr7nmrp2Jpmvr4jbPDhJNfzmVXWMrQ9WtOupcUxeZsBuEtQ32E0UQuAPcWmHQPgSPlumtFaIwEcB2BhAD9zEnFVY15m5Xh5YXaq5r9peYTcx9liQmYiElu17OUk3wohPF0n5lK12hAxHy8CcFYIYbywj0cCOErYx5xca0sXNQu7YVJW6qM1ZH6m8eOmknwVwKLGrASAlSVWrLm/nwMYD2BWAIvJayf57jOSL4v2exbAKyGEj/3cEWUTvudmGW002ATxpqVkj/gFFf0ii9Pdmssawb/GxYo0RjGTlUA9JUnkfT63SmaptbFVw9R0rTmj4Q6Tcz5AcvUuso/+2osl+o+Q5Dnd0HB/jaRAWa15SCNqOPcMTnax4KLMd5vvO1wyouzz8N3pdPtW2jleKs21VrBB8piGU79tPSEUOsSBfwfApQCmA9hLYgp5dBaUvg/gAgATkWRebyq/LYqGuw1AXsC0lCNMsgDeCiFMUQKmSiZDK4AbAcwl0irrzmslvxa8LgLgJllbvKB+Z418iM8AHBFCuECudxUAxwLYQb5XjZxN0WrKrmWN/xD6kzaqgx/3onn+Qeb0YPGV3xbNNBnA7wBsJJ/PL1YJDAb0NROA1eV1oHz/IckXADwH4CUALyu/4ZGv0vNLkguZCT1Muiyr1JsgAT476R9w64+pPTy7yda2mRC/r5a0NPdwSYnUqbQmOXo9F9VSers4z6wkzzWWRM5p49gCHFa6Pmf6xaR1Tu5OHO72lFbsDZtpEtHiy5jFFPPl2kdIR+cVJDn/w0geMCNdrf32lI6xNaEWMtLz6RDChxJbGxxCmIykpk39n6dCCO/o9/L7W4y0ncnEk+YEMHuECXu9WqaC+G17AzhItGzWaYUMgBcAvGX8NxotnwNwCMkD5FjVJHGC+IdF+X9XAM+IrzYootU8Ha/V8C0A3gCwhfjTrWU0WbEb0j+TwlCGfqThxoh/5kMhi0dIkEwIYWII4eUQwo0yhxQDlyFptXAOgIcBfGrY5Lw8V7X4FhWO47sUKwCweWOfiJlWBJCTv4eb7z8136vZmDPfTzP/L4LONgr2ob7bU9PHkCSrALjYkDJ20mUBfAVgGwA7irkQnADQ67uQ5KZyzGwVwGaD16tIVsON8gA6zPWlAUbDBlMAnAJg9RDCPw2R0jQbuyj8QggTAXxk5p4Cb2ErqFxPn1YRwh+aOVMIIdwTQjg6hLARgAUArCyKKSvzXEMHswnx8t0HADDKAkr8mGBiDBaQY833GkWfy3z/TQhhugGclbhqI4/pCeDERNAczeuR9FApRiQXAewWQvgohPAygH3RWWnutW4LkkyUZQQkme5em2bbiPl4JoD/Ion/FeTVavyI4CSxxtyyAG4HsEYI4VQAU0QQMGXcQpW0UdpxGlbTyRzV5/m+84kBYAHlEyyJp1lVkkf5vrUITcMsAPgxgAvlPY/OTKAsgH8gSWgIGaFMW1XlyfatIDoroYAMkgC3bl9EVLVdN+5L8/c8kX2/BPB1dwEnAxJMCf0yjiSBueHjQgj3aZpaCOE2AMfIhC84c6qApL3EjcKgdin9y5qPMq57iPl4jDMf04Cs5mOrmNxbhRB2DCG8JkDL1Dh0kUl5Jv1FkwZjVvrP5pAwQClz9GPz2YLSWGg5kn8HcD+ADeW7ViTtSV4BsG0IYXQI4UM7wCOcyfi+pKe0q2p1Gm68AaSWLFgN91kEcNYEGhtCmNwDRtBWAGwf8dsKcsM3hBDOVj9PWMiWEMLZAP4s+1jWSfM7VwLwZ5WKFSaxWvNxZZL3A7hOzEdNe2spYT7q9xMBnCRa7W7bp8Rp5FBFjTbQtjEObBQMzJmiyVXwfmYstXlI/gVJLHlrmYM5mVPjxEdfI4Twd2PxfEcOjECS2KsPdC9hIb9EEgQMYod+5+PJBM6bK7LfjzN/zx254c+dVumO37YdgFNTNFurULIHiHYuqHkgzFtGCJbFAPwQM6Z+ZeWYO5J8LYRwWqn0LzVtBWiziTY7VEijnCE8YhKTDog3AvhtCOEtc6+Fbpp23QFiscxvG13T0c0/vdeiWCCz+Ps3qYI5kq8D+EaswVEAdpffTpfnTRHkp4QQPok9Q33QMwsy9Yvt5GUvtGhs3vPl5ArIcZgxev+pmYyzRjTc+B6QEAXJ47zKXI+t52oBMAHALibOZ7syaY5nO8mdADwmDFXe+FSq6U4h+UII4R4/cFoTpZ/J+gmnis9KIwhCCfNRfYCnAJwQQnjQ0PTFEuaj9+FClcAxUEiYCW7clLwa4YWpWHc5SY44Rhh4xUIOSXxusMyjk0IIj5rwQsE/QwXcAk4KF4ypFRw9HJC0wFstciOaGKoqe7BcYMyH65IU1rIJkiOESJjVgMRrjd0lbBHVEOIYZ0MIY0luK4M1wgx8MALiWpJrhBDeNU61HrdAcjUAZxr7vcM4y4gAw/ppXwL4LYDLDDPKCvy0IkoHvWsFnkbvOaNj8rUhpmz4ZJRjNIuScncYgIPFPSrKb9vkOb8N4PQQwvVOWEYtIgXZNwCeFFU5QibzoDIXXzCkg2WA8kaCDDGAs5Pjm276bXmSlyIpp7BmYDAa4wglSUq1nRZN2RJCeFUWYbjTUcVqio4EcAvJDQBMMxUVswE4Xh6E5uEFo7X8pC+6Mb8GSXXAJ2XMx66wiD01KTMVTthG39oRr74YYdyKomQfnYfOSpfphhD5BsC5AC4MIUzyFk/apm2cHwWwtgSxhwng5haiZC55zS2vuWQSjhRTNLYpA9mWAtzp3fTbjgCwqwObgrwVwJ9CCBeUA5sBXV72vUcWczhfjt3q/LlV5dg7y/XsC+AEJMkCxYgfWcp8fEKA9qAFWjfYx3IaLlNDDdHoWwHxENIwHTtxPVYWsGlT5MFGWJ4eQnjfCcuyz3CGdZsldjZdfKx3SgBgJiFRRsr77MLwzCsabYKZsLGJOK0bftuPkUT18ykkyZMADhWVXvHkNaD7A8lFRWPl0FkzpYTJTiTHAlgCwGbGfMymsI+23qpVGK7TAVyhxYkVmo+lNFihBNC7U4BaqHC/Rt+UUfTbTM4auV8YYwXif0RYPlyhr52q4exKIoj4bd856hJjmoIk++HjEv6WPvRsioSpBGxqvi0gFLuaedbZbRXiZqcQwnRPklQq8QQARyBpYbCB01pq6/9S/relMzFtUzTXVkCSBXN6CGFcN8zHNJNIj6+gr4ZGCymkTH/b0u6vxWm8d2WejxXm8ToDtG4Jy+/1KjE9GgquzULB5AMG01Ys6/qflGLmKu63ocFtKfG5XsxZyyTq8ToA7Cqdv7LdqTxQgEqbiF2RZBS04vv5iDkDxEzKg8wbrfYQgPVCCIeGEMZpulh3wWayIN5G0m3qCTF11PSN+YxdMRUHSuVBWvJB0d3vFCSdvla1YLNYqAvrZEAZBWbKgwroWrs11QIXojNWlnXmTxbAYSGEf4tZ2G2tIZO5LYTwuZiMkzBj6lspExlG87YC+ATA3iGEjUMIT0YaK6EH16lj/6iMy5FiwrcZwHcVcOVMxtDPgNfinmO0TaCM853S8rFHwrKeNG9socHWMtpNKwD2AvBz41N5kuTCEMIVlZIkpfxEGcwOkvMiCVy3VmheFdGZRpYX83G1EMK1aglUazUbt+DEgXLcPyCpVbxBJtEQwyD3BHChHwItDXBME1LVFJa1BBydCea3tgoYyXWQFMAW3HUq2B4AcGRXSRLvIxpSplVWh3kGwCGGXQ1l2K4Wcz1rW/NRtVEVxzUYNu1SWeFl9RDCeyGE3ZGU7jwtk2lQD55bGvD6C2kyOMVlaI9YFFVd+qvWGq4DnUuz2m1QGZJklPhtQxwhoYzk2+K3FZDSMakSbaEmMcmNhYG60PiKfrJ5rabB6/cB7BNC+EkI4dlqS8QSWjWHJNj+mBSzziqlO+sgyXiZUEXt1F8Ap9c/whBh9hm318N5rOU2DUmbPf/gZylBkrQI2BbGjE2ANLg+GUna1oTukiSmfd8iJK8D8H9ISuRzKE212xq16QDOAvCDEMI11TYfK5g4WjjbiiRR9kmSu4gffQqAP1QR+P3NpJwt5b4mNjrg2g3g7DZ75IaVJDkdSW/2WOV2FsD+IYTnu0uSmHYCGyJJcN4DnalsaQyrkhEt8rpXzMdjQwhf18h8rOS5aW1cDsCSSHqz3ENypRDCdG1i2kDzpV4abv6U7yfUWsDUZABNgnARCbXqzzdHit+2A5IEUZ+5oX7bmSGEW3pIkmhJ0JKiaaejM5ULjihRoOkC6u+Kdt0yhPBCnczHSrWdVm9sCeC/JE8nOVwLaSssph0oqV0LpvisExpZw+lNxCoDNEm0aEiLFdFZAZBxflsbgHtCCMf1hCSJ+JcsYT5qhUSrgPJMJOzjLX1gLW2mPEvtRDYESZ7nUyS30xBOBa26y4UFig0ONEY0nM6BAnpQFN2XAPd55GHNKc2JmCg4zgrgVnRm7CvgdMK/CWBPrRio0iSPESK2qFNTtv4h5uNxIYRvTEV3sQ9MnNi1txgzc2kAf5V+k0uYxeJL+ailztewGs60vMggKSUDZmxxMdHM1YYG3EeRz0YBmNXUG10iJp41JVXyKEnyNZKk0mKNJ7IO9lcAdpDy+Bf7iPkYe26hhJmpvul2AJ4meQLJoTLxshEzMzMASJORRsP5Gs2GNiltPpo9V1F8pwXEzDkSwC4GbDTmXECSsfFiDVqRlyoMDUhaWP+1D5iPaWNbSYmONTNHIKm9+x/J0aYrlW2l7vu8VDpmjbDp/FtMQFdwgPtEeIRQy+dcD8B94M6lNzpM/LYzMWMhqe7TAuBEmfQtvaFZTJJqX/NdSmW/MLKP+ig5JLWEd5O8nuQiQj5RtN0EY0oXIvOkkQGn174iZmwPqWP0nhmrhtZwnwH4NvLQtgHwF3SmUPng9k0hhNOrSJJ01UzqK+ZjqcnDEt/F/FNtHVEAsBuAZ6QOsE2EyhGiBacI6IrOr2tk01Kvfa2U71+vx0XUI67yJWbsQanS5WAka7cVnLnZimRVkp/bNcLrOJGrJsX9ksF1MIc9AVIsYWbmxbQ6B8B/SP4ohDA+hHASkmyVf6AzWdu222hkwqQNSd4pHDkGAC/XQ6jUDHBmiaAckhbd/mYKmLG2TYs9xwlJMgWdMbPe1CLdNkdN27xq9+KvpOoiZhoiIvi0ov0hkleTXEhae49GsojLh0hyD0ONLI16PstlxYdTJlzH4VskTHjjAs4d/6nIRIllo7cD2FEa9tR6vbZQi7GxJIssTvk7AAcYn7Ae5jCRFOy+KxYDU7SdDZoXAeyDJHZ3qIz/daIR/iDHGNrghMmPzP16/+1zURTFRgacXyIo61g2mMmgtW2P1YkkCSk+UWqpRiXmowkyj0bS9uE4dGbW1MMkU+l9LZL80CuctmOKNtT1IUYhSeJ+hOQPQwhfhBCORJJu92J3xqYPbDqXtojwBUCypDZrZP7X13aW91GyxJUuWVWILGf7R9m3Xsv/7u+WGPJL9j5q76Gc+Wj+XprkbWapojzJE6pxb2bJpRVLLNaoyyhta363Icn/Vbjgox2DPMmLSc7tr6GB5qCO2UIkp5jlpux97l2PuVdzDWdyKr9AsjCdSkeftvUAgKNqyEjWxIdz5uPMJE8V83kHMVumG9KhHtc2g48sWrdNmt6sh6Q6/Ct01oKlaSo1u4KQW0+R3EdNrgpSxPqiObmdmMTaj0Y5g3YkrSrqornrIa1U+v/XmW0aa3sfwB4aD6ozI1nKHwpdMB91zbeTkKzR4BftqGWhb2ralYxlQa41Z6rD/4bOquc84ot32EqE+QFcLYtu/qCCFLE+peTk/bPIcw9ClrxbD/+tXoDTG37YAFC13HQkhaTjulvbVmUtUTYs4NjHlUjehWRNgCVQvp6umtceKhUQcq0qJN4NIWyPZJH4t9G5bFYhcmwbu8shWYrpCZLnkxxhjttnzUzNnwwh3IxkEcVWQxIBwKM1YpJ7DXB6Y08jyavMGpLkkBDCU3VgJHviaMfMx1llSd8nkayCmUP5erpaCbKKBIYREnoftwmp8nsRfDFSxSdya5nUEWJm7qh1gH3czNRMmqPEErEtPu6u4TPqtbvVos/rzHrb59TLUU0hTX4eIU3setbPG6BZUmRnku/JPsWU9cQLZr3tIsmjq0yarGwIDk965OXatvKETgmiZxWS/3KkSrECUoVS8Lpi7Lh9lDxZguR4uY/XJBiOegmLepkCejP3yjnvBXBsHyFJrA+kEhwA/s/4aQWSPyB5L4CbkayQE1syOLY+d0Bt4lc9yopxZubzIYSfAPgFkpWPWkuQCLGC1ydJ/rYbBa/1NC2LEm56G8CBMg//Tzq1tfShxPSqSBcND8xP8nFZ+qdXKOaIhuswVDpJvkJyC7P/3CQvMOGLXEQrxqh51TQTSI6uRpqX03BMObeed+tKNY4uGCh/zymhgIIZn3yJMIJqQ5J8Xdbt+26s+5qZaaytP5LcvC9r5apMdpIz11OFlwDc/jKJpstkmUjyFHN9WZIHkBwj3xfKmFo62XMGDNeSXLha9xsBXKEagEsxM9cn+Ww3YnckeSfJpfqqmWmESwsGwtabUs8Abh8zQW4luZzZ54ckH61wsnmgUbT4BtWecCk+nH1V7MOVejZGCwwm+WuTtKCau5Rm13H4huRxsvAL+qKZ2QRbfQF3KMl3nPk4H8nLzKTpKDPBik6yv09yPwOM1ho5/isZwOWdptFr/2lPwO603aIkbzH3mSuj7azweVXS3GAsh+a65AMN8JLqM5v83UbykIj5WCgjzQtGmp9CcqSR5q3y9yCS81dD2HQRcKN7ql2930lyG/HTmMLweq3fbva9zZqZzW3gAnADkv81E6PdkASFFOlttdr1sua4Hm+Q+Xsjks+TPLEaPkMK4Ox1Vk3DRUgVPfdwkieTnFrGzCyY69Fr+prkUXKM0NR0A0TDyWsUyYuMz9PhgFYoYyr9V1qkx4C2nPiFuh1TJ8AVq6nhypiZK1YQu7PXZ9nMHfs1O1hiG4hObFZiLtshWbTDrukWK9kBOqvSW5AUZP4CwA9DCA/KIiDZEEI7yZEkf48kgXlHdC6cWA9J7vucVP2cLnb3ksTu9pExaTVjBXw/c0PXsLPLL6MJuIF177rWsx8H2/hU1xKYhs61BK5MBDRbpaK9KNn0zwA4FjNmpWf607N1KWIhhHANgNWQFKlqO/i0nFjb0qAJuIGo7RBPArbrc2cB3AVgTVlLYALJQZKBkiO5NoBHAFyNJAMlZ0AaavjcQm8+W7l/irYbL0Wq68lYZNG/lyxuAq4acyhiPj4PYHQIYesQwsuadyfm44Ik/wTgcQDro7MbVi2B1vcGbUYz86kQwoZI2jtknaazqWgDdt71iUi7kAH1bkvnJbAF2pcAfgfgUs21k8nVQXI4khVSj0CyClDR+ICVnqsW/po/R7GOoNO6u7YQQgeSsh+9ztAH5lcw1zlwAScDkVGg1brrbQRgdmJqFfSfAZwWQvjIVEx3yPXtAOA0ABpPyiF93W/t1VILIVJJPVxv9B0pyjMd3EVhV5f5NaBNSlfIuSLJA+osgdRPGyRgexzABiGEfQVsg+T6OkiuKZUCtwnYcinmo1/mqhW1abHQFRO53iZmpV2haw42M7+Gk/RLpPVKHLA3svUzpjHnLCTPkMl+Gcn1FYx1IkyySFo8/BzA+iGExyXrJIifNifJy5AsR7w5OktSspGxo9OcbQAmIelkfJ083EKVBUapz3rTlGMZE7guJqQ8y7OQ9NN5TZLJW7UcR3un1jMe2FLnQbDm4y4ATkHSmkAfyvkk11DTpEYaT485FUnJ/QkhhK904EWjDSZ5AJIK4fnQ2TC1pcRkt6ZpHkmbujNDCO/UYUL3mtnWTe0aajzP9PjXI4mH6vaphHFAcjCAIbIqE8xKTo2/uQyFtUk+zBm3r026VLWbpqZdU1vK3z8l+YJL9fLZHD6dyqZ6/VNCBXq8QdXKko9UC5RKHN6qHuPork8Tw38byT6x47Rrra7NVDocZcqk/i7XNJtouNNIvk3yI5L3k/yh1Yz9BXTzSmFju5nI35K8UrLR75fPPxdTrubNaRzQViF5t0tVyjtgFV3SsAXaczrJ5Xit1b7+Lval3LoXAXdabwDOFdGOk3NdZr4fTPJefn/rILlJvcerJurdZOJ/5m6ySPIxs++qJiH2wnrdvFR0n28KUXNlyk98lfPHcn+D9JptWY5Ulu9SjfupEHCaG7pNHwOcLWX6WY0Ap+ffT84zVp6vfn61qQYZR/IZI6CetpXvjQg2nRzXOKA9R/JS09l3a/Obs+XzyeLLoQZaQpOXh5I8kOSnKQ2BYuajLcmZTPIsy345jbkhyUdk31pWC1St4rvGJmU9AXeWjM2L5rvDzZx7X0uFpLFVUYps56nFnKur30ZyR1MzdhLJofK5TsZ3hK0MJOcQu5okb68R4Hyr80raB+RcpcCtJJexfpr5e1mSN5p9CzXo2rVSiplb6GnFd518uFoDTv23aSTPkJc+w+kqzB0QPzf1kY3ty5E8huTyRsNkxCyaIjd7utl3P/GllpT9Wmr0UA6XSTCtBNi8n/YoyR+naLQ5RUNPMZJUTeRjqwy4lUsArur1cD0AXHsK4HarEeB0fBaVHjWxbW/jY2fFlCxKnLUxtVvMkTX+je2ZcVqEKAmljlHFSXGoYyHTyAdtnbC3I0T0OOqjfhwxTdt7EXC9qeFOLaPhqg44M7d0jDYj+YF5hhNI7ul+c475/if1GK+ax+FMD3qaGJymAP0BwFwALkeSv/jdhJZM/NkAbBhCuL0Gl6YxFw9mm1P5LYALAFwQQvhGHmaLSfXaAsCpSBY0BJJelbFUr96IiQ2YBGpNpLA+egjhPpIrIVkTbhYkLc0/ILkYkkVNFkXSuh0Abg4h/Es7a2MgDZyhdlcj+bJIn82rpe6NFD7Y+W++xd11JBdP8dPWlI7DLNFsqJYabpVIX8q+ZFKeXi8NZ+bLVrqslrRjzMauj+RNzsR8lOSIeqV6ZfoAwLImy4Py+XFI6qqWl133qOG924rvFgCPIUnz2jOE8I4CTVK9FiV5JZJUtC1FG2rRZVoRqy6tXNWhq0Cj9WbWRCXXVxWfTSyoHwG4A8C/Sa6rKzHJ3MqKC6BJ1TMhWS3nRSSZTpuGEL5Va6zWA9Or1QJuOaUCyfkAXAVgU7PbeQBOlAGr9oDYItP3kJTkXCMPsQ1AXoA2K4BfIinJmRmdqV7ZEhOpiM5ln9pqYA735QLPepllOvabisBbAsADJI8JIVykWlTTuQBMBrCV9Mqcpqlcda5S6XUzUs2k0YZ4UCJlmxSNGHpwPk+afCXkzSx6PWafjIQP3o+EEAoVNoX9pzQV6nHmTBczTbbsRZPytAhLWaymSSnj2aIEFskjDCtMYbrnt4RKGok3kHw2nUC/dHb1IyQXjbFP1WCzDODuILmI+c7S/JuTfCIl1auSrl7P2aB+lcdrpT4OuFPLhAVqFYdbzbVn/8j4/5bBHHgt+szNr24CxDkJUrY6cOj7UJK/qMYSQ1K5HSNEViL5Nwe0XInW4j55+R1po95qtGS9kpf7CuBOqVXg2+VL7iUZPUtq0NoA/mtDLJ1hwYaBuJmHc47JYdzfSiMXs1vZLAx/iZgRmWqYl/L3/CQvTMmpTHvZnMqxJI/WxUBqJMHT1haIpXaN7kXAnVoLk9LMi2Fiqus2Xcb/RakMOMfkSeo5/yWk18BsQGuA9Cd5GB9IELklsgji3lJZoNszQuW2dFdKmsk7kwBlXIWLLBaMeUnxGy4WwqemvoHz4QplALd1H9Nw1QCczpm1HdiKTN9sxs/79QwBlKLGe4WklPeP5O9ZASwslK4u7TuM5FVI+oyo5rgaSTBzYgghrz0SuwI2s0zuDkiatp4FYBSSwDXR2TohRrVrI9MsgFsBrBFCOCSEMEbXQ9NF53tbpvXiuTM1AHMQqj8TQngCwA8BvI6kRUZOnt1tAE4AcA+AlwFMkOc0RA5zCYCJCUEeBlYbPyOtlzQS6EETvFxTiAeaRNRfuGPsa3I0K154UIpC/5aynkAlC1M87JejqofEjLCU3pfsK8nLZ1SzHs6PrRmHWaVtgm6fSUNe3W9uKfvajuTuaccbiKD7tRm0MSSfFIDRrKy5puzbKqA5yJAUC5d7gM4vvN0ALVdmPWvLPL6mtW3VJkSqALhGqvjerStC0gjm60iOiDDKexmSRNcdXwjNreSAXpxig99iyiZaXNnPNAOEudIeovPZri3ROiEteflzkr8yiwsG9kJlcBfjcL2Z2nVyNQDnFl55wyyiMqeZDzomy7lVkMaS3EWsmdYBs9ppF6nen4lZ+YawSjvFGD8zyLtInR1lWahR9vsI2C6MgC0WTyuaItNz1Myt9wQuw1Kyv4cFDOBGknzIgOll1WBOCA8i+QdTJExd4WggrtRTsZ3u6Pq0kh2NxV1uBvg5krO7yakP43TDKhYqaAx0E8ml6+2nVQi4Vfoq4MTMPsOFBQrdjcMZYdwqiQq6vadFwFbTyf9bkRxP8j6SQ5pLHZegfW0KTtoDMZJ0b5KTnPn3BMlhTkIGktuS/LBE1oj+/znJH7hJFPrI+KRVfBdqsQJqVwWm6etyYooloRpv1zLmf1bGvcUtBpl1JMknJFe2z8kI2MVNy4Tmwo9dYaU8KOX9IGc6/MmYl48IQxVcyc9chp0sRgLbeYnr3KalOfXoHtZNHy4tRlh3Dee0y2oSgC5Exld97n1i11YB6aWvy80znEByQyeIm+ZjlSSogu1Ikw1CkofK57ubYOiq8pvWSCD9KBOKiGk7kvyS5IF91KSsBHBb1HryuWfSSvI4Ayo/pu2mB+maXpCZexslqXHnSQ+c5cz4Z4zwPMukBE42Gj1jGOSmZuuJuSnvxxmgkORBzqc7yEi8jKPwg8vhfNY8tI6Ir0Hpl7liHyNNVjRpS/41XSZ7TQHnBNhahiEsulBLzsQG/2O6ZYXIfe3uKkb0eGunmI0nm+c31bCfTZ+tSiymb06znzMlMhGAnkJyFXcc3X+I6ejkA+C2gdAUOc6w3gSemZg/YPmtJn0pHdBGkrzAjJ9vnmsF11k2oTtyT4ebfScKUz2d5MXy/VJOcPoOy7YdYdOk7MkkkwE+x4CCmjng4yu2EasJjn9Fchun4ezEWVe6N8Vq3iwh8yrJXSshdmoMuEUluHuXvO6W//8h/99HcvVqSntHaGVJ7iHtwhnx16xWe1dLZEoIxfVd/eDyJGdW8orknmI27hLz1aSJ0wVN7VY9wGVI/sb4BlGwuYewtpgZOQHpRm7SBicp28RnmOyqBXx/EpJ8zE2iwH5YzBi7L1l74X8paXE+Be4KE6bJlkjRutOAc5jb55fGtJyqKXXWV6uEbGtu3TMpjzeUcksJDTC3FB8WXS/CrDteTNstZyZATNtZM+kB26fS+BmZOgqitFfo4bG95bCxJCX4OsGY3/syyc1SzNDgyI8hoimLJC83wm+QECfWR9Osn4WdtZJparbaUs+ZEtK41a3Oc6UzQ/RBD0tj3OT/nUm+lSLJO5yp+QjJnVwha6aRtJ5t6GQ+axVT/F/mXnMRoOlYfEvyBNNd22vHWLbQCImnkeTfjNAaKiQLJd66mznPRU1frY7mZRn/xuZk/ldWTPEM5fICpoNEktpYnQ20ziys6BeuVi4fqYujOPrH2/Z6ZuJl+5oUNiDz8bCFpFv2qw5otiW8793yVyU2UrRa1lgfyzst/aQcc5pZlDOQnIfk9iZc8LWc/9w0K6e51TdksLMxQT43+XYZl5f3upkoazlQZCPabn6SlxmzplhG402W9Qe2S1nqtqU3AOiyODLuu+HSx+Umk0DggRYzqx/XGFgFWm1TKQL9VECtgm1/45+P8QLL7KMx0m2bGq53pbROpBcMGDZxYMw6B52yNl3wmtP6QS6vc3lJLZrqTM2cmYztjp4fS/JmKSFZuAQD2GKDu901Rc14ZNxxY/mos0u3tKtcW3B/X3kT57NNkn6WZn04rTZCEsfzRiBt5ATAv4ywfIfkquZYP5Jx1Gr/wU2CpJd9O9FCX+rqNs5v0/cT3YSZyU2M/dyiilkf9zHEyuVuwYgOY2LmHTWu2yTp9HuKSPsFKgBPxmjelsgr67MwShxvDpLrSUuJe8QKYESb5VP6tlCSBXa1BFSZlKzNpXxKt3+4lYf0+Y0k+ZSLxd0l+2v2yhfWHG3O/t4F3NwCuCLJqw3bpRkoWxiK/1uTMqQxu2UNQG4luVrEZPUpYotLQPdjtzxVOe1As4TX0yT/QvJYodyXl45Ug3vg544guQjJDUgeINrlMdO3xff8yEUC/jkHxPtJbu80fraEoBjhFsv4WoLbwQBsXje+swvzG9telLUCGhpsoR+BjgDuB7AJgK8B7BpCuF81EoCHAcyGpN/GdiGEO2TyUPqi6G91TNqR9FI5RxaByJhOvRkkfTF0AYkRALYFsDuA9dDZ0VrbnGfMcbVrcgbxztcFAF8B+Ebex8v7ZHnl9bblGIMBDAMwHElfltmRLF4xEklb79jxC3I9el1EZ2v0VrPvOAB/A3B1COF5B7SidKj+rveL9InRLtoXAzhYzvU8gN1CCG/L73+IpL8IkPSnmYDOPjYZAHsD2AHAfPIs7wFwaQhhsh6/qWr6hpZb0ZTaTxGi4wyx/9Xh/q2hnlWy7mEk6Qtiyug2nuQeMcnqNZ58tgrJMx0xYxnODqNR8sbvs+0eqrWptmp35q49b879Zqpke+ylQWtHuIQS927N85XEkihKWdS8EmY41bQiHENyBY37Rca3LS001Nz6DujWMXVvfrvdLSCSETNmjCFbNCVqOweaHzvzJ9jemBF2bpCYdOeRfMWVEtmE6fYICPMm3tVh9iv1smCOHasjBWAUU/MeqcJYKkLoZEr830ZyaVkGypvgB5hzPO3io7dohX4KATZwW5I3YHhgbkkrGiMa72Op+G6NpHRdZDTQ6QoWeV/E+D13p0lZG+ROkfxZaYtwmMSrPiihlXIOYL4aIOdeHSmg7IiA3PpT/xPfbnRk4mcik96nZa1A8vciTKbK6zYJL9j1GW5w5/6U5MHuWGuQPC3mCzZndYNoOvl7NpKLaacny/zJ3ys7qf8/x1KOFMAVSP7badJ5BUDzu/N7rRdLQRsmGf/7i9n7qGRbTGN1t6KYxC8IEXS8sKPzpQiNsmlpwjreHQl/0JnsKtxmE4GnWncX9yyOMm7AIf09vhb6KeiCOuEpjr5OqgcAbISkkehEIVUA4E4hC3ZGshRSFsCZIYTjSA6SJawOR7KC65cA7gNwI4B/m9VRg1nvLhiSoqjki7vm4UhWg10IwALy99xCgswq5EibkBotQnQUhNyZLiTL10JAfArgE/P6MuWcOrGLaY1R9T4khngTgDUNafOQEEuThQSZB8BzANZRskiIkC2E+ACAF5A0cZ1DfqNJ4O8hWRLsn0JIFZvqowGB5+NTxpTc1RWZLkTyjyn0/csSw9LjtZJ8KeIPvSRFkctVeF0tXfVPnA/ald/Fgutl8z1t7qlk8xdsWwOz3zUyBn9IIVFsiOBBCW7rdp1pc9g0I/shsTK/xMA0C315s89RYvpMEdPpRNN+T/2SHxo28W7xhb5wQfDrzcqb5YCQLRHgLgsumxMZ+10k8yTTxXFT0BxmCB+tKJ9FOmCPEwH0kJiuQ50/OEgaPBVdE6AdIhq3ufUXwMnkW0iAQpK/M6xiRhx43TZNkdZXmvbrS8pnC0rtlma4/6U7kyjStcp3MsukgdB+V8F5Bksh69a6Rl4aqN0SUV+Y7mi/cZqKLqOkzY3bsiLISPJGzbRpspADB4CbiYQOJuPkcCPFNzITXyfdKJl0Rcls2SZCyqxfbhIbkG8ksbu59BpqcJ9DSC4h/RpPlPDI6yZJ+RSrwctouQvN+Oj2kDTxXUvM8+91DjO/31/70DS12sDy7ULsM/Ev8lK+M8R8p+bkQSaorNvbQpGv2EXTdjFzjC8k5/BhSfU6TUy1DWSNcVuysjTJBSPHXV5YxHWNgBgu7Gt7SmD8M8MsZsqYvkHySKfJbz+UBe09xa/lO792pniIscXNbeAAL+tq4QZJNjpJXu/MUH09ZvohXkHyTZdhf3GsxiwFcMsKZf9FGXp/C0O1/0e0y8N+4pp24G/Zvh9C+mjy9L2S/7mHhCZm64YPfJdpJTjKMq2S1K3CaHOvxWJxyuY2gLWe+CmXkjzATFjbYlw1xbWGNNjRTMLflzPPIuedQzTZ5zJZ3xDS5RkJ3i9j9tVmR/+L+Kb3ChhfEf9Jr/svIiTGKZnRXQEl76ONMDhHWh6c4DJz/tIXi26bW98FYEtkop1vylZ+EvnNKobRDJUCTt7nMqu8nqfXoCu9mv0fF/A8HWkZd4fRcEPNsX9lslg2liyRPSTn80EjJDIVCqVBEgIpiB9ol4p6V1LEsgN2ed/m1mVNl4kAYqSZWHkxJSv22yowa39kJu2vfJaKuY5/ayFm5Fi3yXcfkpzFfP5jc93fRBKk3/ANlsoJIuPL2kUq97IEUnNrbt0CoGH6thezLef8toeEfZu/GzEuncC2YmE7o+F8hzGtF5sg1Pv9khr2hPEFx5Acac4xj2Eki5LP+JD4m3vLegCtXRyPWWSJsGtJrhMTIs3Z09yqBcKVSZ7rCJMZiJZuAO5kY/atGSMb5P0+A5y0bazpB6mxu+fluyet9uvhOAxxlkETaGW2ZtejrpMGxRDCCwBeIHkSgI0B7IokJ/Be2TWDzoLOcpvup41zJiLJhUTKMTrkfSyAMwBMQ5K3OA3AvugsolWNlQ0h5Em+C2BlACNDCN840Cwk538khDDJ5oGW0nQhhGmuGLdZGNoEXPU2U+Gtk2wqgLsB3E1yCQCfy65dmXg6sReV9wlIKq3TtunyPjWEcIkDwQoCuFYA2iNTNc7r8j4vyV8iqQZfFcBSABYGMATA+gAeE4FRKDMWFNA1k4ybgKs58IrGn8kgadPwtp2MlfpDMnGHIakKyAMYoxUH7ji29QMAZMVPmygAywl4iaS6oc2d7lX5rg3ABZHL+QxJa4aujAObs6EJuHoCT0tkvuur0sVJqP1E5gGgFdNfqG8XQsinaDg9R17MxSDv0+WYQzBjbxIAeFO+CwA+BPA2gFfk9RqAd9XUbPYMaQKuYbReV91CA7L9ACwL4HH3nd/yBqieoJiIpDbtK9F41rx9B8BmosneCyFMaT61XpgnzSFoGMJGzc9FkRSnfgPgTSnw1O9GABgBYBKAb0sJATGHs8YMZdNEbAJuwIAJnS3rirUiIoRlbYKrCbjm1gXQfNdL0gPTtHJoAqq5Nbfm1tyaW3Nrbs2tuTW35tbcmltza27Nrbk1t+bW3Jpbc2tuza13t/8HJIHbmI4+yogAAAAASUVORK5CYII="><div><h1>Monitoring Lapangan</h1><div class="mh-sub">Project &bull; Real Time Monitoring</div></div></div>';
+  const c=document.createElement('div'); c.className='mh-clock noprint'; c.id='mhClock'; h.appendChild(c);
+  const tick=()=>{const d=new Date();c.textContent=d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'  \u2022  '+d.toLocaleTimeString('id-ID',{hour12:false}).replace(/\./g,':');};
+  tick(); setInterval(tick,1000);
+})();
+</script>
+<!-- Tab "Ringkasan": dashboard utama. Disisipkan otomatis ke Index.html oleh doGet(). -->
+<style>
+.db-k{border-radius:8px;color:#fff;padding:14px 16px;display:grid;gap:4px}
+.db-k span{font-size:14px;opacity:.9}.db-k b{font-size:30px;line-height:1.1}.db-k small{font-weight:700;text-align:right}
+.db-k.t{background:linear-gradient(135deg,#0f3a7a,#1e63c8)}.db-k.o{background:linear-gradient(135deg,#126b3a,#27b85f)}
+.db-k.s{background:linear-gradient(135deg,#c26a00,#f5a623)}.db-k.r{background:linear-gradient(135deg,#8f1d17,#e0453b)}
+.db-pb{height:8px;background:rgba(255,255,255,.3);border-radius:4px}.db-pb i{display:block;height:100%;background:#fff;border-radius:4px}
+.db-donut{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:center}
+.db-leg{display:grid;gap:8px;font-size:13px}.db-leg i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:7px}
+.db-ef{background:linear-gradient(135deg,#0d3b24,#1f7a45);color:#fff;border:0}
+.db-ef b{font-size:34px}.db-ef span{opacity:.85}
+.db-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center}
+.db-top h2{font-size:20px;margin:0}
+.db-lbl{color:#fff;font-weight:700;font-size:16px}
+.fill.alat{background:#1e63c8}.fill.lang{background:#f08a00}.fill.prod{background:#7b3fe0}
+#dbPg .fill,#dbExc .fill{background:#1f9d55}#dbPl .fill{background:#f08a00}
+#tabRingkas section{border-top:5px solid var(--sc,#f5c400)}
+#tabRingkas .s-alat{--sc:#1e63c8}#tabRingkas .s-lang{--sc:#f08a00}#tabRingkas .s-gal{--sc:#1f9d55}#tabRingkas .s-prod{--sc:#7b3fe0}
+#tabRingkas .s-alat h2{color:#1e63c8}#tabRingkas .s-lang h2{color:#c46a00}#tabRingkas .s-gal h2{color:#1f7a45}#tabRingkas .s-prod h2{color:#7b3fe0}
+#tabRingkas .db-k{grid-template-columns:48px 1fr;row-gap:6px;column-gap:12px;padding:14px 16px}
+#tabRingkas .db-ic{grid-row:1;grid-column:1;width:46px;height:46px;font-size:22px}
+#tabRingkas .db-k>span:not(.db-sub){grid-column:2;grid-row:1;font-size:15px;font-weight:600}
+#tabRingkas .db-k b{grid-column:1/-1;grid-row:2;font-size:32px;white-space:nowrap;line-height:1.1;margin-top:4px}
+#tabRingkas .db-k b em{font-size:16px;font-style:normal;font-weight:600;margin-left:5px;opacity:.9}
+#tabRingkas .db-k .db-sub{grid-column:1/-1;grid-row:3;font-size:13px}
+#tabRingkas .db-k .db-pb{grid-column:1/-1;grid-row:4}
+#tabRingkas .db-k small{grid-column:1/-1;grid-row:5;text-align:left;font-size:13px}
+main{grid-template-columns:minmax(0,1fr)}
+#tabRingkas{grid-template-columns:minmax(0,1fr)}
+#tabRingkas section{min-width:0}
+#tabRingkas .cols{grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr))}
+#tabRingkas #dbK{grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));align-items:start}
+.db-main{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:16px;align-items:stretch}
+.db-right{display:grid;gap:16px;min-width:0;align-content:start}
+#dbK1{display:grid;min-width:0}#dbK1 .db-k{align-content:start}
+@media(max-width:900px){.db-main{grid-template-columns:minmax(0,1fr)}}
+#tabRingkas .sub,#tabRingkas .kpi div,#tabRingkas .legend span{overflow-wrap:anywhere}
+#tabRingkas .db-units{grid-column:1/-1;display:grid;gap:10px;margin-top:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,.3)}
+#tabRingkas .db-ut{font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;opacity:.9}
+.db-un{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:13px;font-weight:700}
+.db-un .nm{overflow-wrap:anywhere}
+.db-un .stp{font-size:11px;padding:1px 9px;border-radius:10px;background:#fff;color:#444;white-space:nowrap;opacity:1}
+.stp.Beroperasi{color:#1f7a45!important}.stp.Standby{color:#8a6d00!important}.stp.Rusak{color:#b3261e!important}
+.db-ub{height:7px;background:rgba(255,255,255,.28);border-radius:4px;margin:5px 0 3px}
+.db-ub i{display:block;height:100%;background:#fff;border-radius:4px}
+.db-ui{font-size:12px;opacity:.95;overflow-wrap:anywhere}
+#tabRingkas .db-k .db-pct{display:inline;font-size:15px;white-space:nowrap}
+#dbCmp text{font:11px system-ui,sans-serif;fill:#666d75}#dbCmp text.cl{fill:#fff;font-weight:700;font-size:13px}
+#tabRingkas .db-hero{background:linear-gradient(120deg,#0e7490,#1e63c8 55%,#7b3fe0);color:#fff;border:0;border-top:5px solid #f5c400;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+.db-hero .info{color:#e3ecff}
+.db-w{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:10px;margin-top:14px}
+.db-w>div{background:rgba(255,255,255,.14);border-radius:6px;padding:8px 12px;font-size:12px;color:#e3ecff;overflow-wrap:anywhere}
+.db-w b{display:block;font-size:20px;color:#fff;line-height:1.25}
+.db-wb{height:10px;background:rgba(255,255,255,.25);border-radius:5px;margin-top:10px}.db-wb i{display:block;height:100%;background:#f5c400;border-radius:5px}
+.db-wl{font-size:12px;color:#e3ecff;margin-top:4px}
+.db-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:14px}
+.db-wc{flex:1;min-width:min(260px,100%)}.db-wc .db-w{margin-top:0}
+.db-hg{width:78px;flex:none}.db-hg svg{width:100%;height:auto;display:block;overflow:visible;animation:hgSway 4s ease-in-out infinite;transform-origin:50% 50%}
+.hg-st{stroke-dasharray:3 3;animation:hgFall .5s linear infinite}
+.hg-gr{animation:hgGrain 1.05s linear infinite;opacity:0}
+@keyframes hgSway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+@keyframes hgFall{to{stroke-dashoffset:-6}}
+@keyframes hgGrain{0%{transform:translateY(0);opacity:1}100%{transform:translateY(var(--d));opacity:.15}}
+@media(prefers-reduced-motion:reduce){.db-hg svg,.hg-st,.hg-gr{animation:none}.hg-gr{opacity:1}}
+.db-hero .hint{background:rgba(255,255,255,.16);border-left-color:#f5c400;color:#fff}
+.db-hero .seg{border-color:rgba(255,255,255,.5)}
+.db-hero .seg button{background:rgba(255,255,255,.14);color:#fff}
+.db-hero .seg button[aria-pressed=true]{background:#f5c400;color:#1d2125}
+</style>
+<script>
+(function () {
+  const pane = document.createElement('div');
+  pane.className = 'pane'; pane.id = 'tabRingkas'; pane.hidden = true;
+  pane.innerHTML = `
+  <section class="db-hero"><div class="db-top"><div><h2>Ringkasan Proyek</h2><div class="info" id="dbTgl"></div></div>
+    <div class="seg" id="dbRng" role="group" aria-label="Rentang waktu">
+      <button type="button" data-d="7" aria-pressed="false">7 hari</button>
+      <button type="button" data-d="14" aria-pressed="true">14 hari</button>
+      <button type="button" data-d="30" aria-pressed="false">30 hari</button></div></div>
+    <div id="dbWaktu"></div>
+    <div class="hint" id="dbInfo" style="margin-top:12px">Memuat data...</div></section>
+  <div class="db-lbl">Total keseluruhan pencapaian sejak awal proyek</div><div class="db-main"><div id="dbK1"></div><div class="db-right"><div class="stats" id="dbK"></div>
+  <section class="line"><h2>Perbandingan pemakaian alat, BBM, dan hasil galian</h2>
+    <p class="sub">Batang biru = jam kerja, batang hijau = hasil galian, garis kuning = BBM. Ketiganya diskalakan terhadap puncaknya masing-masing (100%) supaya bisa dibandingkan. Arahkan kursor ke batang atau titik untuk melihat angka asli.</p>
+    <div class="legend" id="dbCmpL"></div><div class="kpi" id="dbCmpK"></div><div id="dbCmp"></div></section>
+  <div class="cols">
+    <section class="line"><h2>Total pemakaian BBM</h2><div class="kpi" id="dbBbmK"></div><div id="dbBbm"></div></section>
+    <section><h2>Status alat hari ini</h2><div class="db-donut" id="dbStatus"></div>
+      <div class="stat db-ef" style="margin-top:14px"><span>Efisiensi operasional (utilisasi rata-rata)</span><b id="dbEf">-</b></div></section>
+  </div></div></div>
+  <div class="cols">
+    <section class="line"><h2>Hasil galian harian vs target</h2><p class="sub">Garis putus-putus = target semua excavator per hari (m&sup3;).</p><div id="dbGal"></div></section>
+    <section class="line"><h2>Volume langsir harian (DT)</h2><p class="sub">Material bekas galian yang diangkut (m&sup3;).</p><div id="dbLang"></div></section>
+  </div>
+  <div class="cols">
+    <section><h2>Progres total galian</h2><div id="dbPg"></div></section>
+    <section><h2>Progres total langsiran</h2><div id="dbPl"></div></section>
+  </div>
+  <div class="cols">
+    <section><h2>Capaian excavator hari ini</h2><p class="sub">Garis hitam = target harian (100%).</p><div class="bars" id="dbExc"></div></section>
+    <section><h2>Langsir DT hari ini</h2><div class="stats" id="dbL" style="margin-bottom:12px"></div>
+      <p class="sub">Volume per DT pada periode terpilih (5 teratas).</p><div class="bars" id="dbDT"></div></section>
+  </div>
+  <div class="cols">
+    <section><h2>Produktivitas alat</h2><div class="db-donut" id="dbProd"></div></section>
+    <section><h2>Top 5 alat (utilisasi)</h2><p class="sub">Jam kerja dibanding target ${'8'} jam per hari.</p><div class="bars" id="dbTop"></div></section>
+  </div>
+  <section><h2>Rute langsir terbesar</h2><div class="bars" id="dbRute"></div></section>
+  <section><h2>Aktivitas terbaru</h2><div class="scroll"><table id="dbAkt"></table></div></section>`;
+  document.querySelector('main').insertBefore(pane, document.querySelector('main').firstChild);
+
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.setAttribute('role', 'tab'); btn.dataset.t = 'tabRingkas';
+  btn.setAttribute('aria-selected', 'false'); btn.textContent = 'Ringkasan';
+  $('tabs').insertBefore(btn, $('tabs').firstChild);
+
+  [['dbBbm','alat'],['dbStatus','alat'],['dbAkt','alat'],['dbGal','gal'],['dbPg','gal'],['dbExc','gal'],
+   ['dbLang','lang'],['dbPl','lang'],['dbDT','lang'],['dbRute','lang'],['dbProd','prod'],['dbTop','prod']]
+    .forEach(x => $(x[0]).closest('section').classList.add('s-' + x[1]));
+  let RG = 14;
+  const load = () => google.script.run.withSuccessHandler(render)
+    .withFailureHandler(err => { $('dbInfo').textContent = 'Gagal memuat: ' + err.message; }).getDashboard(RG);
+
+  $('tabs').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const on = b.dataset.t === 'tabRingkas';
+    pane.hidden = !on; if (on) load();
+  });
+  $('dbRng').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    RG = +b.dataset.d;
+    [...$('dbRng').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+    load();
+  };
+
+  function donut(parts, big, small) {
+    const R = 52, C = 2 * Math.PI * R, tot = parts.reduce((t, p) => t + p.v, 0) || 1; let off = 0;
+    return `<svg viewBox="0 0 140 140" width="160" role="img" aria-label="${esc(big + ' ' + small)}"><circle cx="70" cy="70" r="${R}" fill="none" stroke="#eef0f1" stroke-width="18"/>` +
+      parts.map(p => { const l = p.v / tot * C, s = `<circle cx="70" cy="70" r="${R}" fill="none" stroke="${p.c}" stroke-width="18" stroke-dasharray="${l} ${C - l}" stroke-dashoffset="${-off}" transform="rotate(-90 70 70)"/>`; off += l; return s; }).join('') +
+      `<text x="70" y="72" text-anchor="middle" font-size="25" font-weight="700" fill="#1d2125">${big}</text><text x="70" y="90" text-anchor="middle" font-size="11" fill="#666d75">${small}</text></svg>`;
+  }
+
+  function chart(id, data, key, col, tgt) {
+    if (!data.some(x => x[key] > 0)) { $(id).innerHTML = '<div class="empty">Belum ada data pada rentang ini.</div>'; return; }
+    const W = 700, H = 230, L = 46, R = 12, T = 18, B = 26, iw = W - L - R, ih = H - T - B;
+    const mx = Math.max(tgt || 0, ...data.map(x => x[key])) * 1.15 || 1;
+    const Y = v => T + ih - v / mx * ih, bw = iw / data.length, cw = Math.min(30, bw * .6);
+    let g = '';
+    for (let i = 0; i <= 4; i++) { const v = mx * i / 4, y = Y(v); g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="#e3e5e7"/><text x="${L - 6}" y="${y + 4}" text-anchor="end">${nf.format(Math.round(v))}</text>`; }
+    const cx = i => L + i * bw + bw / 2;
+    const bars = data.map((x, i) => x[key] ? `<rect x="${(cx(i) - cw / 2).toFixed(1)}" y="${Y(x[key]).toFixed(1)}" width="${cw.toFixed(1)}" height="${(T + ih - Y(x[key])).toFixed(1)}" fill="${col}" opacity=".85"><title>${tgl(x.tanggal)}: ${nf.format(x[key])}</title></rect>` : '').join('');
+    const pts = data.map((x, i) => cx(i).toFixed(1) + ',' + Y(x[key]).toFixed(1)).join(' ');
+    const ev = Math.ceil(data.length / 7);
+    const xl = data.map((x, i) => (i % ev === 0 || i === data.length - 1) ? `<text x="${cx(i).toFixed(1)}" y="${H - 8}" text-anchor="middle">${tgl(x.tanggal)}</text>` : '').join('');
+    const tl = tgt > 0 ? `<line x1="${L}" x2="${W - R}" y1="${Y(tgt)}" y2="${Y(tgt)}" stroke="#1d2125" stroke-width="2" stroke-dasharray="6 4"/><text class="val" x="${W - R}" y="${Y(tgt) - 6}" text-anchor="end">Target ${nf.format(tgt)}</text>` : '';
+    $(id).innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img">${g}${bars}<polyline points="${pts}" fill="none" stroke="#1d2125" stroke-width="2"/>${tl}${xl}</svg>`;
+  }
+
+  const MULAI = new Date(2026, 9, 16), BATAS = new Date(2026, 11, 31); // 16 Okt 2026 s.d. 31 Des 2026
+  let WP = 0;
+  function waktu() {
+    const d = new Date(), t0 = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const DAY = 864e5, total = Math.round((BATAS - MULAI) / DAY), jalan = Math.round((t0 - MULAI) / DAY), sisa = Math.round((BATAS - t0) / DAY);
+    const fm = x => x.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    WP = Math.max(0, Math.min(100, jalan / total * 100));
+    const jl = jalan < 0 ? 'Belum mulai' : jalan, sl = sisa < 0 ? 'Lewat ' + (-sisa) : sisa;
+    const topH = (100 - WP) / 100 * 35, botH = WP / 100 * 35, botY = 80 - botH, run = jalan >= 0 && sisa > 0;
+    const glass = 'M8 6H52V10C52 26 36 36 33 45C36 54 52 64 52 80V84H8V80C8 64 24 54 27 45C24 36 8 26 8 10Z';
+    const hg = `<svg viewBox="0 0 60 90" role="img" aria-label="Jam pasir: waktu proyek terpakai ${nf.format(WP)} persen">
+      <defs><clipPath id="hgC"><path d="${glass}"/></clipPath><linearGradient id="hgS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd84a"/><stop offset="1" stop-color="#f08a00"/></linearGradient></defs>
+      <rect x="4" y="1" width="52" height="5" rx="2.5" fill="#f5c400"/><rect x="4" y="84" width="52" height="5" rx="2.5" fill="#f5c400"/>
+      <path d="${glass}" fill="rgba(255,255,255,.14)"/>
+      <g clip-path="url(#hgC)"><rect x="6" y="${(45 - topH).toFixed(1)}" width="48" height="${topH.toFixed(1)}" fill="url(#hgS)"/>
+        <rect x="6" y="${botY.toFixed(1)}" width="48" height="${botH.toFixed(1)}" fill="url(#hgS)"/></g>
+      ${run ? `<line class="hg-st" x1="30" x2="30" y1="45" y2="${botY.toFixed(1)}" stroke="#ffd84a" stroke-width="1.6"/>` +
+        [0, .35, .7].map(dl => `<circle class="hg-gr" cx="30" cy="46" r="1.4" fill="#fff" style="--d:${(botY - 46).toFixed(1)}px;animation-delay:${dl}s"/>`).join('') : ''}
+      <path d="${glass}" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg>`;
+    $('dbWaktu').innerHTML = `<div class="db-wrap"><div class="db-hg">${hg}</div><div class="db-wc"><div class="db-w">
+      <div>Mulai proyek<b>${fm(MULAI)}</b></div>
+      <div>Sudah berjalan<b>${jl}${jalan < 0 ? '' : ' hari'}</b>dari ${total} hari</div>
+      <div>Batas waktu<b>${fm(BATAS)}</b></div>
+      <div>Sisa waktu<b>${sl} hari</b>${sisa < 0 ? 'melewati batas waktu' : 'menuju batas waktu'}</div></div>
+      <div class="db-wb" role="img" aria-label="Waktu terpakai ${nf.format(WP)} persen"><i style="width:${WP.toFixed(1)}%"></i></div>
+      <div class="db-wl">Waktu proyek terpakai ${nf.format(WP)}%</div></div></div>`;
+  }
+
+  function units(u, tr) {
+    if (!u || !u.length) return '';
+    return '<div class="db-units"><div class="db-ut">Per unit \u2022 target rental ' + nf.format(tr) + ' jam</div>' + u.map(x => {
+      const pc = x.jam / tr * 100;
+      return `<div><div class="db-un"><span class="nm">${esc(x.kode)} \u2022 ${esc(x.nama)}</span><span class="stp ${esc(x.status)}">${esc(x.status || 'Belum lapor')}</span></div>` +
+        `<div class="db-ub"><i style="width:${Math.min(100, pc).toFixed(1)}%"></i></div>` +
+        `<div class="db-ui"><b class="db-pct">${nf.format(pc)}%</b> \u2022 ${nf.format(x.jam)} / ${nf.format(tr)} jam \u2022 ${pc >= 100 ? 'target tercapai' : 'sisa ' + nf.format(tr - x.jam) + ' jam'} \u2022 ${nf.format(x.bbm)} L BBM</div></div>`;
+    }).join('') + '</div>';
+  }
+
+  function cmp(h) {
+    const S = [{ k: 'jam', n: 'Jam kerja', c: '#1e90ff', u: 'jam' }, { k: 'gal', n: 'Hasil galian', c: '#1f9d55', u: 'm\u00b3' }, { k: 'bbm', n: 'BBM', c: '#f5c400', u: 'L' }];
+    const mx = {}, tot = {}; S.forEach(x => { mx[x.k] = Math.max(0, ...h.map(d => d[x.k])); tot[x.k] = h.reduce((t, d) => t + d[x.k], 0); });
+    $('dbCmpL').innerHTML = S.map(x => `<span><i style="background:${x.c}"></i>${x.n} (puncak ${nf.format(mx[x.k])} ${x.u})</span>`).join('');
+    const J = tot.jam, B = tot.bbm, G = tot.gal;
+    $('dbCmpK').innerHTML = `<div><b>${nf.format(J)} jam</b>Jam kerja</div><div><b>${nf.format(B)} L</b>BBM</div><div><b>${nf.format(G)} m\u00b3</b>Hasil galian</div><div><b>${G > 0 ? nf.format(B / G) : '-'} L/m\u00b3</b>BBM per m\u00b3 galian</div><div><b>${J > 0 && G > 0 ? nf.format(G / J) : '-'} m\u00b3/jam</b>Galian per jam kerja</div>`;
+    if (!S.some(x => mx[x.k] > 0)) { $('dbCmp').innerHTML = '<div class="empty">Belum ada data pada rentang ini.</div>'; return; }
+    const W = 700, H = 270, L = 42, R = 14, T = 46, B2 = 28, iw = W - L - R, ih = H - T - B2, n = h.length, bw = iw / n;
+    const cx = i => L + i * bw + bw / 2, Y = v => T + ih - v / 100 * ih, pct = (d, k) => mx[k] ? d[k] / mx[k] * 100 : 0;
+    let g = '';
+    for (let i = 0; i <= 4; i++) { const y = Y(i * 25); g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="#dbe6f6"/><text x="${L - 6}" y="${y + 4}" text-anchor="end">${i * 25}%</text>`; }
+    const gw = Math.min(50, bw * .72), one = gw / 2 - 1;
+    const bars = h.map((d, i) => [['jam', 'url(#cmpB)', 0], ['gal', 'url(#cmpG)', 1]].map(q => {
+      const v = d[q[0]]; if (!(v > 0)) return '';
+      const x = cx(i) - gw / 2 + q[2] * (one + 2), y = Y(pct(d, q[0]));
+      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${one.toFixed(1)}" height="${(T + ih - y).toFixed(1)}" rx="3" fill="${q[1]}"><title>${tgl(d.tanggal)} \u2022 ${q[0] === 'jam' ? 'Jam kerja' : 'Hasil galian'}: ${nf.format(v)} ${q[0] === 'jam' ? 'jam' : 'm\u00b3'}</title></rect>`;
+    }).join('')).join('');
+    let line = '';
+    if (mx.bbm > 0) {
+      const pt = h.map((d, i) => [cx(i), Y(pct(d, 'bbm'))]);
+      let dd = 'M' + pt[0][0].toFixed(1) + ' ' + pt[0][1].toFixed(1);
+      for (let i = 0; i < pt.length - 1; i++) {
+        const p0 = pt[i - 1] || pt[i], p1 = pt[i], p2 = pt[i + 1], p3 = pt[i + 2] || p2;
+        dd += `C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+      }
+      const area = dd + `L${pt[n - 1][0].toFixed(1)} ${T + ih}L${pt[0][0].toFixed(1)} ${T + ih}Z`;
+      const pk = h.reduce((m, d, i) => d.bbm > h[m].bbm ? i : m, 0), pp = pt[pk];
+      line = `<path d="${area}" fill="url(#cmpA)"/><path d="${dd}" fill="none" stroke="#f5c400" stroke-width="3.5" stroke-linecap="round"/>` +
+        pt.map((q, i) => `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="5.5" fill="#f5c400" stroke="#fff" stroke-width="2"><title>${tgl(h[i].tanggal)} \u2022 BBM: ${nf.format(h[i].bbm)} L</title></circle>`).join('') +
+        `<rect x="${(pp[0] - 36).toFixed(1)}" y="${(pp[1] - 40).toFixed(1)}" width="72" height="26" rx="6" fill="#123d6b"/><path d="M${(pp[0] - 6).toFixed(1)} ${(pp[1] - 14).toFixed(1)}l6 8 6-8z" fill="#123d6b"/><text class="cl" x="${pp[0].toFixed(1)}" y="${(pp[1] - 22).toFixed(1)}" text-anchor="middle">${nf.format(h[pk].bbm)} L</text>`;
+    }
+    const ev = Math.ceil(n / 7);
+    const xl = h.map((d, i) => (i % ev === 0 || i === n - 1) ? `<text x="${cx(i).toFixed(1)}" y="${H - 8}" text-anchor="middle">${tgl(d.tanggal)}</text>` : '').join('');
+    $('dbCmp').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Perbandingan jam kerja, hasil galian, dan BBM harian" style="width:100%;height:auto;display:block;overflow:visible">
+      <defs><linearGradient id="cmpB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e90ff" stop-opacity=".95"/><stop offset="1" stop-color="#8fc8ff" stop-opacity=".55"/></linearGradient>
+      <linearGradient id="cmpG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f9d55" stop-opacity=".95"/><stop offset="1" stop-color="#8fdcb0" stop-opacity=".55"/></linearGradient>
+      <linearGradient id="cmpA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f5c400" stop-opacity=".4"/><stop offset="1" stop-color="#f5c400" stop-opacity=".04"/></linearGradient></defs>
+      ${g}${bars}${line}${xl}</svg>`;
+  }
+
+  function render(p) {
+    const a = p.alat, pc = n => a.total ? n / a.total * 100 : 0;
+    $('dbTgl').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const kc = (c, ic, t, v, line, pct, lbl, ex) => `<div class="db-k ${c}"><div class="db-ic">${ic}</div><span>${t}</span><b>${v}</b><span class="db-sub">${line}</span><div class="db-pb"><i style="width:${Math.min(100, pct).toFixed(1)}%"></i></div><small>${lbl}</small>${ex || ''}</div>`;
+    const T = p.total, Pg = p.progres, TP = T.prod, n = nf.format;
+    const tr = p.targetRental || 200, rp = p.unit.length ? Math.min(100, T.jam / (tr * p.unit.length) * 100) : 0;
+    $('dbK1').innerHTML = kc('t', '\u{1F69C}', 'Pemakaian alat', n(T.jam) + '<em>jam</em>', 'BBM ' + n(T.bbm) + ' L \u2022 Hari ini ' + a.ber + ' / ' + a.total + ' beroperasi', rp, n(rp) + '% dari target rental ' + n(tr * p.unit.length) + ' jam (' + p.unit.length + ' unit \u00d7 ' + n(tr) + ' jam)', units(p.unit, tr));
+    $('dbK').innerHTML =
+      kc('s', '\u{1F69A}', 'Langsir galian (DT)', n(Pg.langsir.real) + '<em>m\u00b3</em>', 'Total ' + n(T.rit) + ' rit \u2022 sisa ' + n(Pg.langsir.sisa) + ' m\u00b3', Pg.langsir.capai, n(Pg.langsir.capai) + '% dari target ' + n(Pg.langsir.target) + ' m\u00b3') +
+      kc('o', '\u26CF', 'Hasil galian', n(Pg.galian.real) + '<em>m\u00b3</em>', 'Sisa ' + n(Pg.galian.sisa) + ' m\u00b3' + (Pg.galian.estHari ? ' \u2022 selesai \u00b1' + n(Pg.galian.estHari) + ' hari kerja' : ''), Pg.galian.capai, n(Pg.galian.capai) + '% dari target ' + n(Pg.galian.target) + ' m\u00b3') +
+      kc('p', '\u{1F4C8}', 'Produktivitas', n(TP.util) + '<em>%</em>', (TP.prodDT ? 'DT ' + n(TP.prodDT) + ' m\u00b3/jam' : 'DT belum ada data') + (TP.lM3 ? ' \u2022 ' + n(TP.lM3) + ' L/m\u00b3' : ''), TP.util, 'Utilisasi rata-rata keseluruhan');
+
+    const msgs = [], g = p.galian, pr = p.prod.ringkas;
+    msgs.push(`Galian hari ini <b>${nf.format(g.volHari)}</b> dari target <b>${nf.format(g.target)} m\u00b3</b> (${nf.format(g.capai)}%).`);
+    if (a.rsk) msgs.push(`<b>${a.rsk}</b> alat berstatus rusak, cek kendala di Laporan Harian.`);
+    if (a.belum) msgs.push(`${a.belum} alat belum dilaporkan hari ini.`);
+    waktu(); msgs.push(`Waktu proyek terpakai ${nf.format(WP)}%, progres galian ${nf.format(p.progres.galian.capai)}% dari target.`);
+    $('dbInfo').innerHTML = msgs.join(' ');
+
+    const h = p.harian, tot = h.reduce((t, x) => t + x.bbm, 0), ak = h.filter(x => x.bbm > 0).length;
+    const top = h.reduce((m, x) => x.bbm > m.bbm ? x : m, h[0]);
+    $('dbBbmK').innerHTML = `<div><b>${nf.format(tot)} L</b>Total ${p.days} hari</div><div><b>${nf.format(ak ? tot / ak : 0)} L</b>Rata-rata per hari kerja</div><div><b>${top.bbm ? nf.format(top.bbm) + ' L' : '-'}</b>Tertinggi${top.bbm ? ' (' + tgl(top.tanggal) + ')' : ''}</div>`;
+    chart('dbBbm', h, 'bbm', '#1e63c8');
+    cmp(h);
+
+    $('dbStatus').innerHTML = donut([{ v: a.ber, c: '#1f7a45' }, { v: a.sby, c: '#f5c400' }, { v: a.rsk, c: '#b3261e' }, { v: a.belum, c: '#c9cdd1' }], a.total, 'Unit') +
+      `<div class="db-leg"><div><i style="background:#1f7a45"></i>Beroperasi: ${a.ber} (${nf.format(pc(a.ber))}%)</div><div><i style="background:#f5c400"></i>Standby: ${a.sby} (${nf.format(pc(a.sby))}%)</div><div><i style="background:#b3261e"></i>Breakdown: ${a.rsk} (${nf.format(pc(a.rsk))}%)</div><div><i style="background:#c9cdd1"></i>Belum lapor: ${a.belum}</div></div>`;
+    $('dbEf').textContent = nf.format(pr.util) + '%';
+
+    chart('dbGal', h, 'gal', '#1f9d55', g.target);
+    chart('dbLang', h, 'lang', '#f08a00');
+    $('dbPg').innerHTML = progHtml('Total galian', p.progres.galian);
+    $('dbPl').innerHTML = progHtml('Total langsiran', p.progres.langsir);
+    renderCapai('dbExc', g.exc);
+
+    const L = p.langsir;
+    $('dbL').innerHTML = [[nf.format(L.ritHari), 'Rit hari ini'], [nf.format(L.volHari) + ' m\u00b3', 'Volume hari ini']].map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+    renderBars('dbDT', L.perDT, 'vol', 'lang', 'm\u00b3', 'n');
+    renderBars('dbRute', L.rute, 'vol', 'lang', 'm\u00b3', 'n');
+
+    $('dbProd').innerHTML = donut([{ v: pr.util, c: '#7b3fe0' }, { v: Math.max(0, 100 - pr.util), c: '#eef0f1' }], nf.format(pr.util) + '%', 'Utilisasi') +
+      `<div class="db-leg"><div><b>${pr.prodDT ? nf.format(pr.prodDT) + ' m\u00b3/jam' : '-'}</b><br>Produktivitas rata-rata DT</div><div><b>${nf.format(pr.vol)} m\u00b3</b><br>Material dipindah (${nf.format(pr.rit)} rit)</div><div><b>${pr.lM3 ? nf.format(pr.lM3) + ' L/m\u00b3' : '-'}</b><br>BBM per m\u00b3 material</div></div>`;
+    renderBars('dbTop', p.prod.top, 'util', 'prod', '%');
+
+    $('dbAkt').innerHTML = p.aktivitas.length
+      ? '<tr><th>Tanggal</th><th>Alat</th><th>Operator</th><th>Lokasi</th><th>Jam</th><th>Status</th></tr>' +
+        p.aktivitas.map(l => `<tr><td>${esc(l.tanggal)}</td><td>${esc(l.kode)}</td><td>${esc(l.operator)}</td><td>${esc(l.lokasi) || '-'}</td><td>${nf.format(l.jam)}</td><td><span class="b ${esc(l.status)}">${esc(l.status)}</span></td></tr>`).join('')
+      : '<tr><td>Belum ada aktivitas tercatat.</td></tr>';
+  }
+
+  waktu();
+  btn.click(); // Ringkasan jadi halaman awal
+})();
+</script>

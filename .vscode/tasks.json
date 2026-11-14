@@ -1,0 +1,9 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Dev (auto-build + preview)", "type": "shell", "command": "npm run dev", "problemMatcher": [] },
+    { "label": "Build PWA", "type": "shell", "command": "npm run build", "problemMatcher": [] },
+    { "label": "Push Apps Script", "type": "shell", "command": "npm run push", "problemMatcher": [] },
+    { "label": "Deploy PWA (Netlify)", "type": "shell", "command": "npm run deploy:web", "problemMatcher": [] }
+  ]
+}

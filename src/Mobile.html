@@ -1,0 +1,53 @@
+<!-- Perapian tampilan HP. Disisipkan terakhir oleh build.py supaya menimpa gaya lain. Hanya aktif di layar <= 700px. -->
+<style>
+@media (max-width:700px){
+  main{padding:10px;gap:12px}
+  section{padding:12px}
+
+  /* ---------- Header + menu ---------- */
+  header{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:12px 12px 10px;border-bottom-width:4px}
+  .mh-brand{order:1;gap:10px}
+  .mh-brand img{width:52px;padding:2px}
+  .mh-brand h1{font-size:20px;line-height:1.15}
+  .mh-sub{font-size:12px}
+  .mh-clock{order:2;margin:0;padding:0;border:0;background:none;border-radius:0;font-size:12px;font-weight:500;color:#dbe6ff;white-space:normal}
+  .tabs{order:3;display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;overflow-y:hidden;
+    margin:2px -12px 0;padding:2px 12px 6px;scroll-snap-type:x proximity;scroll-padding:0 12px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{flex:0 0 auto;scroll-snap-align:start;white-space:nowrap;font-size:13px;font-weight:600;
+    padding:6px 14px;min-height:36px;border-radius:18px}
+
+  /* ---------- Ringkasan: judul + rentang ---------- */
+  .db-top h2{font-size:18px}
+  .db-top .seg button{padding:5px 10px;min-height:32px;font-size:12px}
+
+  /* ---------- Jam pasir + waktu proyek ---------- */
+  .db-wrap{display:grid;grid-template-columns:56px minmax(0,1fr);column-gap:14px;row-gap:0;align-items:center;margin-top:12px}
+  .db-wc{display:contents}
+  .db-hg{grid-column:1;grid-row:1/3;width:56px}
+  .db-wl{grid-column:2;grid-row:1;align-self:end;margin:0;font-size:14px;font-weight:700;color:#fff}
+  .db-wb{grid-column:2;grid-row:2;align-self:start;margin-top:8px}
+  .db-wrap .db-w{grid-column:1/-1;grid-row:3;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+  .db-w>div{padding:8px 10px;font-size:11px}
+  .db-w b{font-size:15px;line-height:1.25}
+
+  /* ---------- Info & kartu lain ---------- */
+  .hint{font-size:12.5px}
+  .db-lbl{font-size:14px}
+  #tabRingkas .db-k b{font-size:28px}
+  .stat b{font-size:22px}
+  .kpi{gap:14px}
+  .kpi b{font-size:17px}
+}
+</style>
+<script>
+/* Tab aktif otomatis digeser ke tengah baris menu saat diketuk */
+(function(){
+  const t=document.getElementById('tabs'); if(!t) return;
+  t.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    setTimeout(()=>b.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'}),30);
+  });
+})();
+</script>

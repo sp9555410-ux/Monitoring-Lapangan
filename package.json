@@ -1,0 +1,19 @@
+{
+  "name": "monitoring-lapangan",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "python tools/build.py",
+    "dev": "concurrently -k \"nodemon -w src -w tools -e html,js,json,py --exec python tools/build.py\" \"serve dist -l 5500\"",
+    "push": "clasp push",
+    "deploy:api": "clasp push && clasp deploy",
+    "deploy:web": "npm run build && npx netlify-cli deploy --dir=dist --prod"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.4.2",
+    "@types/google-apps-script": "^1.0.83",
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.0",
+    "serve": "^14.2.3"
+  }
+}

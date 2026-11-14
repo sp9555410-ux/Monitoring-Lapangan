@@ -1,0 +1,76 @@
+<!-- Form "Catat hasil galian" + data total volume galian. Disisipkan otomatis ke Index.html oleh doGet() di Code.gs. -->
+<style>
+.gi-hi{border-left:5px solid var(--y)}
+.gi-note{background:#fff8d6;border-left:4px solid var(--y);padding:8px 12px;font-size:13px;margin:0 0 12px}
+</style>
+<script>
+(function () {
+  const pane = document.getElementById('tabGalian');
+  if (!pane) return;
+  const sec = document.createElement('section');
+  sec.id = 'giSec';
+  sec.innerHTML = `
+    <h2>Catat hasil galian</h2>
+    <p class="sub">Catat volume material yang digali tiap excavator. Data masuk ke sheet Galian dan langsung dihitung di grafik, rekap, laporan harian, dan total target.</p>
+    <div class="gi-note">Jika excavator dan tanggal yang sama sudah dicatat di sini, angka ini dipakai. Jika belum, dipakai hitungan otomatis dari catatan langsir (excavator pemuat). Tidak ada hitungan ganda.</div>
+    <div class="stats" id="giTotal" style="margin-bottom:14px"></div>
+    <form id="giForm">
+      <label>Tanggal<input type="date" name="tanggal" required></label>
+      <label>Excavator<select name="excavator" id="giExc" required></select></label>
+      <label>Lokasi galian<input name="lokasi" list="dlLokGal" autocomplete="off" placeholder="mis. Pit A"></label>
+      <label>Material<select name="material"><option>Tanah</option><option>Batu</option><option>Lumpur</option><option>Campuran</option></select></label>
+      <label>Volume hasil galian (m\u00b3)<input type="number" min="0.1" step="0.1" name="vol" required></label>
+      <label>Rit DT dimuat (opsional)<input type="number" min="0" step="1" name="rit"></label>
+      <label class="full">Catatan hasil galian<textarea name="catatan" rows="2" placeholder="Contoh: material keras, ada batu besar, area berlumpur, alat sempat berhenti"></textarea></label>
+      <div class="full"><button id="giBtn">Simpan hasil galian</button><div class="msg" id="giMsg"></div></div>
+    </form>
+    <datalist id="dlLokGal"></datalist>
+    <h2 style="margin-top:22px">Kontribusi per excavator terhadap total</h2>
+    <p class="sub">Volume galian kumulatif sejak awal proyek.</p>
+    <div class="bars" id="giKum"></div>
+    <h2 style="margin-top:22px">Catatan hasil galian terbaru</h2>
+    <div class="scroll"><table id="giLog"></table></div>`;
+  pane.insertBefore(sec, pane.children[1] || null);
+
+  const f = document.getElementById('giForm');
+  f.tanggal.value = new Date().toLocaleDateString('en-CA');
+  const msg = (t, c) => { const m = $('giMsg'); m.textContent = t; m.className = 'msg ' + c; };
+
+  window.renderInputGalian = function (p) {
+    const g = p.progres.galian;
+    $('giTotal').innerHTML = [
+      [nf.format(g.target) + ' m\u00b3', 'Target total galian'],
+      [nf.format(g.real) + ' m\u00b3', 'Sudah digali (' + nf.format(g.capai) + '%)'],
+      [nf.format(g.sisa) + ' m\u00b3', 'Sisa volume'],
+      [g.estHari ? nf.format(g.estHari) + ' hari kerja' : (g.sisa > 0 ? '-' : 'Selesai'), 'Perkiraan selesai']
+    ].map(x => `<div class="stat gi-hi"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+    fillSel('giExc', p.excavators);
+    $('dlLokGal').innerHTML = (p.lokasiGalian || []).map(x => `<option value="${esc(x)}">`).join('');
+    renderBars('giKum', p.kumulatif || [], 'vol', 'bbm', 'm\u00b3');
+    const t = p.terbaruInput || [];
+    $('giLog').innerHTML = t.length
+      ? '<tr><th>Tanggal</th><th>Excavator</th><th>Lokasi</th><th>Material</th><th>Volume</th><th>Rit</th><th>Catatan</th></tr>' +
+        t.map(l => `<tr><td>${esc(l.tanggal)}</td><td>${esc(l.excavator)}</td><td>${esc(l.lokasi) || '-'}</td><td><span class="tag">${esc(l.material)}</span></td><td>${nf.format(l.vol)} m\u00b3</td><td>${l.rit || '-'}</td><td style="white-space:normal;min-width:160px">${esc(l.catatan) || '-'}</td></tr>`).join('')
+      : '<tr><td>Belum ada catatan hasil galian. Isi formulir di atas untuk mulai mencatat.</td></tr>';
+  };
+
+  // Sambungkan ke render Hasil Galian yang sudah ada
+  const asli = renderGalian;
+  renderGalian = function (p) { asli(p); window.renderInputGalian(p); };
+
+  f.onsubmit = e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(f));
+    $('giBtn').disabled = true; msg('Menyimpan...', 'ok');
+    google.script.run
+      .withSuccessHandler(p => {
+        renderGalian(p); msg('Hasil galian tersimpan.', 'ok');
+        $('giBtn').disabled = false; f.vol.value = ''; f.rit.value = ''; f.catatan.value = '';
+        const on = document.querySelector('#gaRekapMode [aria-pressed=true]');
+        loadRekapGalian(on ? on.dataset.mode : 'minggu');
+      })
+      .withFailureHandler(err => { msg(err.message, 'err'); $('giBtn').disabled = false; })
+      .saveGalian(data, GR);
+  };
+})();
+</script>

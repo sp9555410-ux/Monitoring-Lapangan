@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<base target="_top">
+<style>
+:root{--ink:#1d2125;--mut:#666d75;--line:#d9dcdf;--bg:#f6f5f1;--card:#fff;--y:#f5c400;--ok:#1f7a45;--bad:#b3261e;--wrn:#8a6d00}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--ink);color:#fff;padding:14px 18px;border-bottom:5px solid var(--y)}
+header h1{margin:0;font-size:19px}
+main{max-width:1100px;margin:0 auto;padding:16px;display:grid;gap:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);padding:10px 12px}
+.stat b{display:block;font-size:26px}.stat span{color:var(--mut);font-size:13px}
+section{background:var(--card);border:1px solid var(--line);padding:16px}
+h2{margin:0 0 12px;font-size:16px}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+label{display:grid;gap:4px;font-weight:600;font-size:13px}
+input,select,textarea{font:inherit;padding:9px;border:1px solid #aab0b6;border-radius:3px;background:#fff;min-height:42px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid var(--y);outline-offset:1px}
+.full{grid-column:1/-1}
+button{font:inherit;font-weight:700;padding:11px 18px;border:0;background:var(--y);color:var(--ink);cursor:pointer;border-radius:3px}
+button:disabled{opacity:.6}
+.info{color:var(--mut);font-size:13px;font-weight:400}
+.msg{padding:9px 12px;margin-top:10px;border-left:4px solid;display:none}
+.msg.ok{display:block;border-color:var(--ok);background:#e8f4ec}.msg.err{display:block;border-color:var(--bad);background:#fbeae9}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:13px;color:var(--mut)}
+.b{padding:2px 8px;border-radius:10px;font-size:12px;font-weight:700}
+.Beroperasi{background:#e8f4ec;color:var(--ok)}.Standby{background:#fff4cc;color:var(--wrn)}.Rusak{background:#fbeae9;color:var(--bad)}
+
+.charts{display:grid;gap:16px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.chead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:4px}
+.chead h2{margin:0}
+.sub{color:var(--mut);font-size:13px;margin:0 0 10px}
+.seg{display:flex;border:1px solid #aab0b6;border-radius:4px;overflow:hidden}
+.seg button{background:#fff;border-radius:0;padding:6px 12px;font-size:13px;font-weight:600;min-height:34px}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+.kpi{display:flex;flex-wrap:wrap;gap:22px;margin:6px 0 12px}
+.kpi div{font-size:13px;color:var(--mut)}.kpi b{display:block;font-size:20px;color:var(--ink)}
+.line svg{width:100%;height:auto;display:block;overflow:visible}
+.line text{font:11px system-ui,sans-serif;fill:#666d75}
+.line .val{font-weight:700;fill:#1d2125;font-size:12px}
+.bars{display:grid;gap:9px}
+.brow{display:grid;grid-template-columns:78px 1fr;gap:8px;align-items:center}
+.brow .n{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track{background:#eef0f1;height:26px;border-radius:3px;position:relative}
+.fill{height:100%;border-radius:3px;min-width:3px;transition:width .5s}
+.track span{position:absolute;left:8px;top:0;line-height:26px;font-size:12px;font-weight:700;color:var(--ink)}
+.fill.jam{background:#3a4650}.fill.bbm{background:var(--y)}
+.empty{color:var(--mut);padding:14px 0}
+@media(prefers-reduced-motion:reduce){.fill{transition:none}}
+
+header{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{background:transparent;color:#fff;border:1px solid #555d65;padding:8px 14px;min-height:38px}
+.tabs button[aria-selected=true]{background:var(--y);color:var(--ink);border-color:var(--y)}
+.pane{display:grid;gap:16px}.pane[hidden]{display:none}
+.brow.wide{grid-template-columns:1fr;gap:3px}
+.hint{background:#fff8d6;border-left:4px solid var(--y);padding:8px 12px;font-size:13px}
+.meter{display:inline-block;width:64px;height:8px;background:#eef0f1;border-radius:4px;vertical-align:middle;margin-right:6px}
+.meter i{display:block;height:100%;background:var(--ink);border-radius:4px}
+table.wide{min-width:820px}
+.tag{background:#eef0f1;border-radius:10px;padding:2px 8px;font-size:12px}
+
+button.alt{background:var(--ink);color:#fff}
+.lbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.rep h3{font-size:15px;margin:20px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--y)}
+.rhead{text-align:center;margin-bottom:14px}.rhead h2{font-size:20px;margin:0}.rhead div{color:var(--mut)}
+.rep ul{margin:0;padding-left:18px}.rep li{margin:3px 0}
+.sign{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px;text-align:center}
+.sign div{padding-top:60px}.sign span{display:block;border-top:1px solid var(--ink);padding-top:4px;font-size:13px}
+.tot td{font-weight:700;background:#faf9f4}
+
+.fill.ok{background:var(--ok)}.fill.mid{background:var(--y)}.fill.low{background:var(--bad)}
+.mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--mut);margin:0 0 8px}
+.legend i{display:inline-block;width:12px;height:12px;margin-right:5px;vertical-align:-2px}
+.okc{color:var(--ok);font-weight:700}.lowc{color:var(--bad)}
+@media print{
+  header,.noprint{display:none!important}
+  body{background:#fff;font-size:12px}
+  .pane{display:none!important}#tabLaporan{display:block!important}
+  main{padding:0;max-width:none}
+  section.rep{border:0;padding:0}
+  .stat{border:1px solid #999}
+  table{min-width:0;font-size:11px}th,td{white-space:normal}
+  .scroll{overflow:visible}
+}
+@media(max-width:600px){main{padding:10px}}
+</style>
+</head>
+<body>
+<header><h1>Pemantau Pemakaian Alat Berat</h1>
+  <nav class="tabs" id="tabs" role="tablist">
+    <button type="button" role="tab" data-t="tabAlat" aria-selected="true">Pemakaian Alat</button>
+    <button type="button" role="tab" data-t="tabLangsir" aria-selected="false">Langsir Galian (DT)</button>
+    <button type="button" role="tab" data-t="tabGalian" aria-selected="false">Hasil Galian</button>
+    <button type="button" role="tab" data-t="tabProd" aria-selected="false">Produktivitas</button>
+    <button type="button" role="tab" data-t="tabLaporan" aria-selected="false">Laporan Harian</button>
+  </nav></header>
+<main>
+<div class="pane" id="tabAlat">
+  <div class="stats" id="stats"></div>
+
+  <section class="line">
+    <div class="chead">
+      <h2>Total pemakaian BBM</h2>
+      <div class="seg" id="rng" role="group" aria-label="Rentang waktu">
+        <button type="button" data-d="7" aria-pressed="false">7 hari</button>
+        <button type="button" data-d="14" aria-pressed="true">14 hari</button>
+        <button type="button" data-d="30" aria-pressed="false">30 hari</button>
+      </div>
+    </div>
+    <p class="sub">Total liter solar yang dipakai semua alat setiap hari.</p>
+    <div class="kpi" id="kpi"></div>
+    <div id="lineChart"></div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>Total jam kerja per alat</h2>
+      <p class="sub">Alat dengan jam kerja terbanyak ada di paling atas.</p>
+      <div class="bars" id="barJam"></div>
+    </section>
+    <section>
+      <h2>Total BBM per alat</h2>
+      <p class="sub">Alat dengan pemakaian BBM terbesar ada di paling atas.</p>
+      <div class="bars" id="barBbm"></div>
+    </section>
+  </div>
+
+  <section>
+    <h2>Catat pemakaian alat</h2>
+    <form id="f">
+      <label>Tanggal<input type="date" name="tanggal" required></label>
+      <label>Alat<select name="kode" id="kode" required></select></label>
+      <label>Operator<input name="operator" required autocomplete="off"></label>
+      <label>Lokasi / pekerjaan<input name="lokasi" autocomplete="off"></label>
+      <label>HM awal<input type="number" step="0.1" name="hmAwal" id="hmAwal" required><span class="info" id="hint"></span></label>
+      <label>HM akhir<input type="number" step="0.1" name="hmAkhir" id="hmAkhir" required><span class="info" id="jam">Jam kerja: 0</span></label>
+      <label>BBM (liter)<input type="number" step="0.1" name="bbm" value="0"></label>
+      <label>Status<select name="status"><option>Beroperasi</option><option>Standby</option><option>Rusak</option></select></label>
+      <label class="full">Catatan hasil galian / langsir<textarea name="catatan" rows="2" placeholder="Contoh: material keras, area berlumpur, ada batu besar, akses hauling licin"></textarea></label>
+      <div class="full"><button id="btn">Simpan data</button><div class="msg" id="msg"></div></div>
+    </form>
+  </section>
+
+  <section>
+    <h2>Rekap per alat</h2>
+    <div class="scroll"><table id="rekap"></table></div>
+  </section>
+
+  <section>
+    <h2>Input terbaru</h2>
+    <div class="scroll"><table id="log"></table></div>
+  </section>
+</div>
+
+<div class="pane" id="tabLangsir" hidden>
+  <div class="stats" id="gStats"></div>
+
+  <section>
+    <h2>Progres total langsiran bekas galian</h2>
+    <div id="gProg"></div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>Volume langsir per DT</h2>
+      <p class="sub">Total material galian (m&sup3;) yang sudah diangkut tiap Dump Truck.</p>
+      <div class="bars" id="gBarVol"></div>
+    </section>
+    <section>
+      <h2>Jumlah rit per DT</h2>
+      <p class="sub">Berapa kali tiap DT bolak-balik mengangkut material.</p>
+      <div class="bars" id="gBarRit"></div>
+    </section>
+  </div>
+
+  <section>
+    <h2>Rute langsir terbesar</h2>
+    <p class="sub">Dari lokasi galian ke lokasi buang, diurutkan menurut volume.</p>
+    <div class="bars" id="gBarRute"></div>
+  </section>
+
+  <section>
+    <h2>Catat langsir bekas galian</h2>
+    <form id="g">
+      <label>Tanggal<input type="date" name="tanggal" required></label>
+      <label>Dump Truck<select name="kode" id="gDt" required></select></label>
+      <label>Sopir<input name="sopir" required autocomplete="off"></label>
+      <label>Excavator pemuat<select name="excavator" id="gExc" required></select></label>
+      <label>Excavator bongkar muatan<select name="excavatorBongkar" id="gExcB"></select><span class="info">Alat di lokasi buang (opsional)</span></label>
+      <label>Asal (lokasi galian)<input name="asal" list="dlAsal" required autocomplete="off" placeholder="mis. Pit A"></label>
+      <label>Tujuan (lokasi buang)<input name="tujuan" list="dlTujuan" required autocomplete="off" placeholder="mis. Disposal 1"></label>
+      <label>Material<select name="material"><option>Tanah</option><option>Batu</option><option>Lumpur</option><option>Campuran</option></select></label>
+      <label>Jumlah rit<input type="number" min="1" step="1" name="rit" id="gRit" required></label>
+      <label>Kapasitas per rit (m&sup3;)<input type="number" min="0.1" step="0.1" name="kapasitas" id="gKap" value="10" required></label>
+      <label>Jarak angkut (km)<input type="number" min="0" step="0.1" name="jarak"><span class="info" id="gVol">Volume: 0 m&sup3;</span></label>
+      <label class="full">Catatan<textarea name="catatan" rows="2"></textarea></label>
+      <div class="full"><button id="gBtn">Simpan langsir</button><div class="msg" id="gMsg"></div></div>
+    </form>
+    <datalist id="dlAsal"></datalist><datalist id="dlTujuan"></datalist>
+  </section>
+
+  <section>
+    <h2>Langsir terbaru</h2>
+    <div class="scroll"><table id="gLog"></table></div>
+  </section>
+</div>
+
+<div class="pane" id="tabGalian" hidden>
+  <section>
+    <div class="chead">
+      <h2>Hasil galian per alat</h2>
+      <div class="seg" id="gaRng" role="group" aria-label="Rentang waktu">
+        <button type="button" data-d="7" aria-pressed="false">7 hari</button>
+        <button type="button" data-d="14" aria-pressed="true">14 hari</button>
+        <button type="button" data-d="30" aria-pressed="false">30 hari</button>
+      </div>
+    </div>
+    <p class="sub">Volume material yang digali tiap excavator per hari dibanding target. Data diambil dari catatan langsir (kolom excavator pemuat). Target periode dihitung dari hari yang ada catatan langsir.</p>
+    <div class="stats" id="gaStats"></div>
+    <div class="hint" id="gaInfo" style="margin-top:12px">Memuat data...</div>
+  </section>
+
+  <section>
+    <h2>Progres total volume galian</h2>
+    <div id="gaProg"></div>
+  </section>
+
+  <section class="line">
+    <h2>Volume galian harian vs target</h2>
+    <div class="legend">
+      <span><i style="background:#1f7a45"></i>Target tercapai</span>
+      <span><i style="background:#f5c400"></i>75-99%</span>
+      <span><i style="background:#b3261e"></i>&lt; 75%</span>
+      <span>- - - Target harian</span>
+    </div>
+    <div id="gaChart"></div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>Capaian per excavator</h2>
+      <p class="sub">Garis hitam pada batang = target (100%).</p>
+      <div class="bars" id="gaBarCapai"></div>
+    </section>
+    <section>
+      <h2>Atur target galian</h2>
+      <p class="sub">Target volume galian per hari untuk satu excavator. Tersimpan di sheet Alat kolom E.</p>
+      <form id="gaForm">
+        <label>Excavator<select name="kode" id="gaKode" required></select></label>
+        <label>Target (m&sup3;/hari)<input type="number" min="1" step="1" id="gaTarget" required></label>
+        <div class="full"><button id="gaBtn">Simpan target</button><div class="msg" id="gaMsg"></div></div>
+      </form>
+    </section>
+  </div>
+
+  <section>
+    <h2>Rekap per excavator</h2>
+    <div class="scroll"><table class="wide" id="gaRekap"></table></div>
+  </section>
+
+  <section>
+    <h2>Rincian hasil galian per hari</h2>
+    <p class="sub">Volume galian (m&sup3;) tiap excavator. Hijau = mencapai target alat tersebut, merah = di bawah target.</p>
+    <div class="scroll"><table class="wide" id="gaHarian"></table></div>
+  </section>
+
+  <section>
+    <div class="chead">
+      <h2>Rekap hasil galian mingguan dan bulanan</h2>
+      <div class="seg" id="gaRekapMode" role="group" aria-label="Jenis rekap">
+        <button type="button" data-mode="minggu" aria-pressed="true">Mingguan</button>
+        <button type="button" data-mode="bulan" aria-pressed="false">Bulanan</button>
+      </div>
+    </div>
+    <p class="sub">Rekap berdasarkan seluruh histori transaksi langsir. Target dihitung dari jumlah hari yang memiliki catatan langsir.</p>
+    <div class="scroll"><table class="wide" id="gaRekapPeriode"></table></div>
+  </section>
+</div>
+
+<div class="pane" id="tabProd" hidden>
+  <section>
+    <div class="chead">
+      <h2>Produktivitas alat berat</h2>
+      <div class="seg" id="pRng" role="group" aria-label="Periode">
+        <button type="button" data-d="7" aria-pressed="false">7 hari</button>
+        <button type="button" data-d="30" aria-pressed="true">30 hari</button>
+        <button type="button" data-d="0" aria-pressed="false">Semua</button>
+      </div>
+    </div>
+    <p class="sub">Seberapa banyak pekerjaan yang dihasilkan alat dibanding jam dan BBM yang dipakai.</p>
+    <div class="stats" id="pStats"></div>
+    <div class="hint" id="pInfo" style="margin-top:12px">Memuat data...</div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>Produktivitas Dump Truck</h2>
+      <p class="sub">Volume langsir per jam kerja (m&sup3;/jam). Makin panjang makin produktif.</p>
+      <div class="bars" id="pBarDT"></div>
+    </section>
+    <section>
+      <h2>Produktivitas Excavator</h2>
+      <p class="sub">Volume material yang dimuat per jam kerja (m&sup3;/jam).</p>
+      <div class="bars" id="pBarExc"></div>
+    </section>
+  </div>
+
+  <section>
+    <h2>Utilisasi alat</h2>
+    <p class="sub">Jam kerja dibanding target <span id="pTarget">8</span> jam per hari yang dicatat.</p>
+    <div class="bars" id="pBarUtil"></div>
+  </section>
+
+  <section>
+    <h2>Rapor per alat</h2>
+    <div class="scroll"><table class="wide" id="pTabel"></table></div>
+    <p class="sub" style="margin-top:10px">Utilisasi: Baik &ge; 75%, Cukup 50-74%, Rendah &lt; 50%. Ketersediaan = persentase hari tercatat alat tidak berstatus Rusak. L/m&sup3; = liter BBM per m&sup3; material.</p>
+  </section>
+</div>
+
+<div class="pane" id="tabLaporan" hidden>
+  <section class="noprint">
+    <div class="chead">
+      <h2>Laporan harian</h2>
+      <div class="lbar">
+        <label>Tanggal laporan<input type="date" id="lTgl"></label>
+        <button type="button" id="lWa">Salin untuk WhatsApp</button>
+        <button type="button" id="lPrint" class="alt">Cetak / Simpan PDF</button>
+      </div>
+    </div>
+    <p class="sub">Rekap otomatis dari data pemakaian alat dan langsir pada tanggal yang dipilih.</p>
+    <div class="msg" id="lMsg"></div>
+    <textarea id="lBox" readonly rows="10" hidden style="width:100%;margin-top:8px"></textarea>
+  </section>
+  <section class="rep" id="lKertas"><div class="empty">Memuat laporan...</div></section>
+</div>
+</main>
+
+<script>
+let D = null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const f = $('f');
+f.tanggal.value = new Date().toLocaleDateString('en-CA');
+
+function render(d) {
+  D = d;
+  renderCharts();
+  renderLangsir();
+  const s = d.ringkas;
+  $('stats').innerHTML = [
+    [s.alatBeroperasi, 'Alat beroperasi hari ini'], [s.jamHariIni, 'Jam kerja hari ini'],
+    [s.bbmHariIni + ' L', 'BBM hari ini'], [s.alatRusak, 'Alat rusak']
+  ].map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+
+  const cur = $('kode').value;
+  $('kode').innerHTML = d.alat.map(a => `<option value="${esc(a.kode)}">${esc(a.kode)} - ${esc(a.nama)}</option>`).join('');
+  if (cur) $('kode').value = cur;
+  hint();
+
+  $('rekap').innerHTML = '<tr><th>Alat</th><th>HM terakhir</th><th>Total jam</th><th>Total BBM (L)</th><th>L/jam</th><th>Status</th></tr>' +
+    d.rekap.map(r => `<tr><td>${esc(r.kode)} - ${esc(r.nama)}</td><td>${r.hmTerakhir}</td><td>${r.jam.toFixed(1)}</td><td>${r.bbm.toFixed(1)}</td><td>${r.lPerJam}</td><td><span class="b ${esc(r.status)}">${esc(r.status)}</span></td></tr>`).join('');
+
+  $('log').innerHTML = d.terbaru.length
+    ? '<tr><th>Tanggal</th><th>Alat</th><th>Operator</th><th>Lokasi</th><th>Jam</th><th>BBM</th><th>Status</th></tr>' +
+      d.terbaru.map(l => `<tr><td>${esc(l.tanggal)}</td><td>${esc(l.kode)}</td><td>${esc(l.operator)}</td><td>${esc(l.lokasi)}</td><td>${l.jam}</td><td>${l.bbm}</td><td><span class="b ${esc(l.status)}">${esc(l.status)}</span></td></tr>`).join('')
+    : '<tr><td>Belum ada data. Isi formulir di atas untuk mulai mencatat.</td></tr>';
+}
+
+
+const nf = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 1 });
+let RANGE = 14;
+
+function tgl(s) { const [y, m, d] = s.split('-'); return d + '/' + m; }
+
+function renderLine() {
+  const data = D.harian.slice(-RANGE);
+  const total = data.reduce((t, x) => t + x.bbm, 0);
+  const aktif = data.filter(x => x.bbm > 0).length;
+  const top = data.reduce((a, b) => b.bbm > a.bbm ? b : a, data[0]);
+  $('kpi').innerHTML =
+    `<div><b>${nf.format(total)} L</b>Total ${RANGE} hari</div>` +
+    `<div><b>${nf.format(aktif ? total / aktif : 0)} L</b>Rata-rata per hari kerja</div>` +
+    `<div><b>${top.bbm ? nf.format(top.bbm) + ' L' : '-'}</b>Tertinggi${top.bbm ? ' (' + tgl(top.tanggal) + ')' : ''}</div>`;
+  if (!total) { $('lineChart').innerHTML = '<div class="empty">Belum ada data BBM pada rentang ini.</div>'; return; }
+
+  const W = 700, H = 250, L = 44, R = 14, T = 22, B = 28, iw = W - L - R, ih = H - T - B;
+  const rawMax = Math.max(...data.map(x => x.bbm));
+  const step = Math.pow(10, Math.floor(Math.log10(rawMax / 4 || 1)));
+  const unit = [1, 2, 2.5, 5, 10].map(m => m * step).find(u => u * 4 >= rawMax) || step * 10;
+  const max = unit * 4;
+  const X = i => L + (data.length === 1 ? iw / 2 : i * iw / (data.length - 1));
+  const Y = v => T + ih - v / max * ih;
+  let g = '';
+  for (let i = 0; i <= 4; i++) {
+    const y = Y(unit * i);
+    g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="#e3e5e7"/><text x="${L - 6}" y="${y + 4}" text-anchor="end">${nf.format(unit * i)}</text>`;
+  }
+  const pts = data.map((x, i) => [X(i), Y(x.bbm)]);
+  const path = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const area = path + ` L${pts[pts.length - 1][0]} ${T + ih} L${pts[0][0]} ${T + ih} Z`;
+  const every = Math.ceil(data.length / 7);
+  const xl = data.map((x, i) => (i % every === 0 || i === data.length - 1) ? `<text x="${X(i)}" y="${H - 8}" text-anchor="middle">${tgl(x.tanggal)}</text>` : '').join('');
+  const dots = data.map((x, i) => `<circle cx="${pts[i][0]}" cy="${pts[i][1]}" r="${x === top ? 6 : 4}" fill="${x === top ? '#1d2125' : '#f5c400'}" stroke="#1d2125" stroke-width="2"><title>${tgl(x.tanggal)}: ${nf.format(x.bbm)} L BBM, ${nf.format(x.jam)} jam kerja</title></circle>`).join('');
+  const tp = pts[data.indexOf(top)];
+  $('lineChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafik total pemakaian BBM harian">
+    ${g}<path d="${area}" fill="#f5c400" opacity=".28"/><path d="${path}" fill="none" stroke="#1d2125" stroke-width="2.5" stroke-linejoin="round"/>
+    ${dots}<text class="val" x="${tp[0]}" y="${tp[1] - 12}" text-anchor="middle">${nf.format(top.bbm)} L</text>${xl}
+    <text x="${L}" y="12">Liter</text></svg>`;
+}
+
+function renderBars(id, rows, key, cls, unit, lab) {
+  rows = rows.filter(r => r[key] > 0).sort((a, b) => b[key] - a[key]);
+  if (!rows.length) { $(id).innerHTML = '<div class="empty">Belum ada data. Simpan input pertama untuk melihat grafik.</div>'; return; }
+  const max = rows[0][key];
+  $(id).innerHTML = rows.map(r => { const w = (r[key] / max * 78).toFixed(1); return `<div class="brow${lab ? ' wide' : ''}"><div class="n" title="${esc(r.nama || r[lab || 'kode'])}">${esc(r[lab || 'kode'])}</div>
+    <div class="track"><div class="fill ${cls}" style="width:${w}%"></div><span style="left:calc(${w}% + 8px)">${nf.format(r[key])} ${unit}</span></div></div>`; }).join('');
+}
+
+function renderCharts() { renderLine(); renderBars('barJam', D.rekap, 'jam', 'jam', 'jam'); renderBars('barBbm', D.rekap, 'bbm', 'bbm', 'L'); }
+
+$('rng').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  RANGE = +b.dataset.d;
+  [...$('rng').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  renderLine();
+};
+
+function fillSel(id, list) {
+  const cur = $(id).value;
+  $(id).innerHTML = list.map(a => `<option value="${esc(a.kode)}">${esc(a.kode)} - ${esc(a.nama)}</option>`).join('');
+  if (cur) $(id).value = cur;
+}
+function renderLangsir() {
+  const g = D.langsir, s = g.ringkas;
+  $('gStats').innerHTML = [[nf.format(s.ritHariIni), 'Rit hari ini'], [nf.format(s.volHariIni) + ' m\u00b3', 'Volume hari ini'],
+    [s.dtAktif, 'DT aktif hari ini'], [nf.format(s.volTotal) + ' m\u00b3', 'Total material dipindah']]
+    .map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+  fillSel('gDt', g.dt); fillSel('gExc', g.exc);
+  const curB = $('gExcB').value;
+  $('gExcB').innerHTML = '<option value="">- Tidak ada -</option>' + g.exc.map(a => `<option value="${esc(a.kode)}">${esc(a.kode)} - ${esc(a.nama)}</option>`).join('');
+  if (curB) $('gExcB').value = curB;
+  $('gProg').innerHTML = progHtml('Total langsiran', g.progres);
+  $('dlAsal').innerHTML = g.lokasi.asal.map(x => `<option value="${esc(x)}">`).join('');
+  $('dlTujuan').innerHTML = g.lokasi.tujuan.map(x => `<option value="${esc(x)}">`).join('');
+  renderBars('gBarVol', g.perDT, 'vol', 'bbm', 'm\u00b3');
+  renderBars('gBarRit', g.perDT, 'rit', 'jam', 'rit');
+  renderBars('gBarRute', g.perRute, 'vol', 'bbm', 'm\u00b3', 'rute');
+  $('gLog').innerHTML = g.terbaru.length
+    ? '<tr><th>Tanggal</th><th>DT</th><th>Sopir</th><th>Pemuat</th><th>Bongkar</th><th>Rute</th><th>Material</th><th>Rit</th><th>Volume</th><th>Catatan</th></tr>' +
+      g.terbaru.map(l => `<tr><td>${esc(l.tanggal)}</td><td>${esc(l.kode)}</td><td>${esc(l.sopir)}</td><td>${esc(l.excavator)}</td><td>${esc(l.excBongkar) || '-'}</td><td>${esc(l.asal)} \u2192 ${esc(l.tujuan)}</td><td><span class="tag">${esc(l.material)}</span></td><td>${l.rit}</td><td>${nf.format(l.vol)} m\u00b3</td><td>${esc(l.catatan) || '-'}</td></tr>`).join('')
+    : '<tr><td>Belum ada data langsir. Isi formulir di atas untuk mulai mencatat.</td></tr>';
+}
+const gf = $('g');
+gf.tanggal.value = new Date().toLocaleDateString('en-CA');
+function hitungVol() { $('gVol').textContent = 'Volume: ' + nf.format((+$('gRit').value || 0) * (+$('gKap').value || 0)) + ' m\u00b3'; }
+$('gRit').oninput = hitungVol; $('gKap').oninput = hitungVol;
+function gShow(t, c) { const m = $('gMsg'); m.textContent = t; m.className = 'msg ' + c; }
+gf.onsubmit = e => {
+  e.preventDefault();
+  $('gBtn').disabled = true; gShow('Menyimpan...', 'ok');
+  google.script.run
+    .withSuccessHandler(d => { render(d); gShow('Langsir tersimpan.', 'ok'); $('gBtn').disabled = false; $('gRit').value = ''; hitungVol(); })
+    .withFailureHandler(err => { gShow(err.message, 'err'); $('gBtn').disabled = false; })
+    .saveLangsir(Object.fromEntries(new FormData(gf)));
+};
+$('tabs').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  [...$('tabs').children].forEach(x => x.setAttribute('aria-selected', x === b));
+  ['tabAlat', 'tabLangsir', 'tabGalian', 'tabProd', 'tabLaporan'].forEach(t => $(t).hidden = t !== b.dataset.t);
+  if (b.dataset.t === 'tabGalian') { loadGalian(); loadRekapGalian('minggu'); }
+  if (b.dataset.t === 'tabProd') loadProd();
+  if (b.dataset.t === 'tabLaporan') loadLaporan();
+};
+
+/* ===== Progres total ===== */
+function progHtml(judul, q) {
+  const w = Math.min(100, q.capai).toFixed(1);
+  return `<div class="brow wide"><div class="n" style="white-space:normal">${esc(judul)}: ${nf.format(q.real)} / ${nf.format(q.target)} m\u00b3 (${nf.format(q.capai)}%)</div>
+    <div class="track"><div class="fill ${q.capai >= 100 ? 'ok' : 'mid'}" style="width:${w}%"></div></div></div>
+    <p class="sub" style="margin:6px 0 0">Sisa ${nf.format(q.sisa)} m\u00b3.` +
+    (q.estHari ? ` Dengan rata-rata ${nf.format(q.rata)} m\u00b3 per hari kerja, perkiraan selesai ${nf.format(q.estHari)} hari kerja lagi.` : q.sisa > 0 ? '' : ' Target tercapai.') + '</p>';
+}
+
+/* ===== Hasil Galian ===== */
+let GA = null, GR = 14;
+const klas = c => c >= 100 ? 'ok' : c >= 75 ? 'mid' : 'low';
+const nilaiG = c => c >= 100 ? ['Tercapai', 'Beroperasi'] : c >= 75 ? ['Hampir', 'Standby'] : ['Belum', 'Rusak'];
+
+function loadGalian() {
+  google.script.run.withSuccessHandler(renderGalian)
+    .withFailureHandler(err => { $('gaInfo').textContent = 'Gagal memuat: ' + err.message; })
+    .getHasilGalian(GR);
+}
+
+function renderGaChart(p) {
+  const data = p.harian, tgt = data[0].target;
+  if (!data.some(h => h.total > 0)) {
+    $('gaChart').innerHTML = '<div class="empty">Belum ada data galian pada rentang ini. Catat langsir dengan memilih excavator pemuat.</div>'; return;
+  }
+  const W = 700, H = 260, L = 48, R = 14, T = 22, B = 28, iw = W - L - R, ih = H - T - B;
+  const rawMax = Math.max(tgt, ...data.map(h => h.total));
+  const step = Math.pow(10, Math.floor(Math.log10(rawMax / 4 || 1)));
+  const unit = [1, 2, 2.5, 5, 10].map(m => m * step).find(u => u * 4 >= rawMax) || step * 10;
+  const max = unit * 4;
+  const Y = v => T + ih - v / max * ih;
+  const bw = iw / data.length, cw = Math.min(34, bw * 0.62);
+  const col = { ok: '#1f7a45', mid: '#f5c400', low: '#b3261e' };
+  let g = '';
+  for (let i = 0; i <= 4; i++) {
+    const y = Y(unit * i);
+    g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="#e3e5e7"/><text x="${L - 6}" y="${y + 4}" text-anchor="end">${nf.format(unit * i)}</text>`;
+  }
+  const bars = data.map((h, i) => {
+    if (!h.total) return '';
+    const x = L + i * bw + (bw - cw) / 2, y = Y(h.total);
+    return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${cw.toFixed(1)}" height="${(T + ih - y).toFixed(1)}" fill="${col[klas(h.capai)]}"><title>${tgl(h.tanggal)}: ${nf.format(h.total)} m\u00b3 (${nf.format(h.capai)}% dari target ${nf.format(h.target)} m\u00b3)</title></rect>` +
+      (data.length <= 14 ? `<text class="val" x="${(x + cw / 2).toFixed(1)}" y="${(y - 5).toFixed(1)}" text-anchor="middle">${nf.format(h.total)}</text>` : '');
+  }).join('');
+  const every = Math.ceil(data.length / 7);
+  const xl = data.map((h, i) => (i % every === 0 || i === data.length - 1)
+    ? `<text x="${(L + i * bw + bw / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle">${tgl(h.tanggal)}</text>` : '').join('');
+  const tline = tgt > 0
+    ? `<line x1="${L}" x2="${W - R}" y1="${Y(tgt)}" y2="${Y(tgt)}" stroke="#1d2125" stroke-width="2" stroke-dasharray="6 4"/><text class="val" x="${W - R}" y="${Y(tgt) - 6}" text-anchor="end">Target ${nf.format(tgt)} m\u00b3</text>` : '';
+  $('gaChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafik volume galian harian dibanding target">${g}${bars}${tline}${xl}<text x="${L}" y="12">m\u00b3</text></svg>`;
+}
+
+function renderCapai(id, rows) {
+  if (!rows.length) { $(id).innerHTML = '<div class="empty">Belum ada excavator. Tambahkan alat berjenis Excavator di sheet Alat.</div>'; return; }
+  const max = Math.max(120, ...rows.map(r => r.capai));
+  $(id).innerHTML = rows.map(r => {
+    const w = (r.capai / max * 100).toFixed(1), m = (100 / max * 100).toFixed(1);
+    return `<div class="brow wide"><div class="n" title="${esc(r.nama)}">${esc(r.kode)} \u2014 ${nf.format(r.capai)}% (${nf.format(r.vol)} / ${nf.format(r.targetPeriode)} m\u00b3)</div>
+      <div class="track"><div class="fill ${klas(r.capai)}" style="width:${w}%"></div><div class="mark" style="left:${m}%"></div></div></div>`;
+  }).join('');
+}
+
+function setGaTarget() {
+  if (!GA) return;
+  const e = GA.excavators.find(x => x.kode === $('gaKode').value);
+  $('gaTarget').value = e ? e.target : '';
+}
+
+function renderGalian(p) {
+  GA = p; const s = p.ringkas;
+  $('gaStats').innerHTML = [
+    [nf.format(s.vol) + ' m\u00b3', 'Total galian ' + p.days + ' hari'],
+    [nf.format(s.target) + ' m\u00b3', 'Target (' + s.hariKerja + ' hari kerja)'],
+    [nf.format(s.capai) + '%', 'Capaian target'],
+    [s.hariCapai + ' / ' + s.hariKerja, 'Hari target tercapai']
+  ].map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+
+  const msgs = [], ada = p.excavators.filter(e => e.vol > 0);
+  if (ada.length) {
+    const top = ada.slice().sort((a, b) => b.vol - a.vol)[0];
+    msgs.push(`Galian terbanyak: <b>${esc(top.kode)}</b> (${nf.format(top.vol)} m\u00b3).`);
+    const low = ada.slice().sort((a, b) => a.capai - b.capai)[0];
+    if (low.capai < 75) msgs.push(`Capaian terendah: <b>${esc(low.kode)}</b> (${nf.format(low.capai)}%). Cek jam kerja alat dan ketersediaan DT.`);
+  }
+  if (p.tanpaExc > 0) msgs.push(`${nf.format(p.tanpaExc)} m\u00b3 langsir belum tercatat excavator pemuatnya, jadi tidak masuk hitungan per alat.`);
+  $('gaInfo').innerHTML = msgs.length ? msgs.join(' ') : 'Belum ada data galian pada periode ini. Catat langsir dan pilih excavator pemuat.';
+
+  renderGaChart(p);
+  $('gaProg').innerHTML = progHtml('Total galian', p.progres.galian);
+  renderCapai('gaBarCapai', p.excavators);
+  fillSel('gaKode', p.excavators); setGaTarget();
+
+  const ex = p.excavators;
+  $('gaRekap').innerHTML = ex.length
+    ? '<tr><th>Excavator</th><th>Target/hari</th><th>Hari kerja</th><th>Volume (m\u00b3)</th><th>Rata-rata/hari</th><th>Target periode</th><th>Capaian</th><th>Hari tercapai</th><th>Catatan hasil galian</th></tr>' +
+      ex.map(r => { const n = nilaiG(r.capai); return `<tr><td>${esc(r.kode)} - ${esc(r.nama)}</td><td>${nf.format(r.target)} m\u00b3${r.custom ? '' : ' <span class="tag">default</span>'}</td><td>${r.hari}</td><td>${nf.format(r.vol)}</td><td>${r.rata ? nf.format(r.rata) : '-'}</td><td>${nf.format(r.targetPeriode)}</td><td>${nf.format(r.capai)}% <span class="b ${n[1]}">${n[0]}</span></td><td>${r.hariCapai} / ${s.hariKerja}</td><td style="white-space:normal;min-width:180px">${esc(r.catatan) || '-'}</td></tr>`; }).join('')
+    : '<tr><td>Belum ada excavator terdaftar di sheet Alat.</td></tr>';
+
+  const tx = p.tanpaExc > 0;
+  const rowTanpa = h => +(h.total - ex.reduce((t, e) => t + h.perExc[e.kode], 0)).toFixed(1);
+  $('gaHarian').innerHTML = '<tr><th>Tanggal</th>' + ex.map(e => `<th title="${esc(e.nama)}">${esc(e.kode)}</th>`).join('') + (tx ? '<th>Tanpa excavator</th>' : '') + '<th>Total (m\u00b3)</th><th>Target</th><th>Capaian</th><th>Catatan hasil galian</th></tr>' +
+    p.harian.slice().reverse().map(h => {
+      const lbl = new Date(h.tanggal + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' });
+      const cells = ex.map(e => { const v = h.perExc[e.kode]; return `<td class="${v >= e.target ? 'okc' : v > 0 ? 'lowc' : ''}">${v ? nf.format(v) : '-'}</td>`; }).join('');
+      const n = nilaiG(h.capai);
+      return `<tr><td>${esc(lbl)}</td>${cells}${tx ? `<td>${rowTanpa(h) ? nf.format(rowTanpa(h)) : '-'}</td>` : ''}<td><b>${h.total ? nf.format(h.total) : '-'}</b></td><td>${nf.format(h.target)}</td><td>${h.aktif ? nf.format(h.capai) + '% <span class="b ' + n[1] + '">' + n[0] + '</span>' : '-'}</td><td style="white-space:normal;min-width:180px">${esc(h.catatan) || '-'}</td></tr>`;
+    }).join('') +
+    `<tr class="tot"><td>Total</td>${ex.map(e => `<td>${nf.format(e.vol)}</td>`).join('')}${tx ? `<td>${nf.format(p.tanpaExc)}</td>` : ''}<td>${nf.format(s.vol)}</td><td>${nf.format(s.target)}</td><td>${nf.format(s.capai)}%</td><td>-</td></tr>`;
+}
+
+
+function loadRekapGalian(mode) {
+  google.script.run.withSuccessHandler(p => renderRekapGalian(p))
+    .withFailureHandler(err => { $('gaRekapPeriode').innerHTML = `<tr><td>Gagal memuat rekap: ${esc(err.message)}</td></tr>`; })
+    .getRekapGalian(mode);
+}
+function renderRekapGalian(p) {
+  const ex = p.excavators || [], rows = p.rows || [];
+  if (!rows.length) { $('gaRekapPeriode').innerHTML = '<tr><td>Belum ada data hasil galian.</td></tr>'; return; }
+  $('gaRekapPeriode').innerHTML = '<tr><th>Periode</th><th>Hari ada produksi</th>' + ex.map(e => `<th>${esc(e.kode)} (m³)</th>`).join('') + '<th>Total (m³)</th><th>Rit</th><th>Target (m³)</th><th>Capaian</th><th>Tanpa excavator</th><th>Catatan hasil galian</th></tr>' +
+    rows.map(r => `<tr><td>${esc(r.label)}</td><td>${r.hari}</td>${ex.map(e => `<td>${r.perExc[e.kode] ? nf.format(r.perExc[e.kode]) : '-'}</td>`).join('')}<td><b>${nf.format(r.vol)}</b></td><td>${nf.format(r.rit)}</td><td>${nf.format(r.target)}</td><td>${nf.format(r.capai)}%</td><td>${r.tanpaExc ? nf.format(r.tanpaExc) : '-'}</td><td style="white-space:normal;min-width:180px">${esc(r.catatan) || '-'}</td></tr>`).join('');
+}
+$('gaRekapMode').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  [...$('gaRekapMode').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  loadRekapGalian(b.dataset.mode);
+};
+
+$('gaRng').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  GR = +b.dataset.d;
+  [...$('gaRng').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  loadGalian();
+};
+$('gaKode').onchange = setGaTarget;
+function gaShow(t, c) { const m = $('gaMsg'); m.textContent = t; m.className = 'msg ' + c; }
+$('gaForm').onsubmit = e => {
+  e.preventDefault();
+  $('gaBtn').disabled = true; gaShow('Menyimpan...', 'ok');
+  google.script.run
+    .withSuccessHandler(p => { renderGalian(p); gaShow('Target tersimpan.', 'ok'); $('gaBtn').disabled = false; })
+    .withFailureHandler(err => { gaShow(err.message, 'err'); $('gaBtn').disabled = false; })
+    .setTargetGalian($('gaKode').value, $('gaTarget').value, GR);
+};
+
+/* ===== Produktivitas ===== */
+let PR = 30;
+function loadProd() {
+  google.script.run.withSuccessHandler(renderProd)
+    .withFailureHandler(err => { $('pInfo').textContent = 'Gagal memuat: ' + err.message; })
+    .getProduktivitas(PR);
+}
+function renderProd(p) {
+  const s = p.ringkas, dash = v => v ? nf.format(v) : '-';
+  $('pTarget').textContent = p.target;
+  $('pStats').innerHTML = [[dash(s.prodDT) + (s.prodDT ? ' m\u00b3/jam' : ''), 'Produktivitas rata-rata DT'], [nf.format(s.util) + '%', 'Utilisasi rata-rata alat'],
+    [nf.format(s.vol) + ' m\u00b3', 'Material dipindah (' + nf.format(s.rit) + ' rit)'], [dash(s.lM3) + (s.lM3 ? ' L/m\u00b3' : ''), 'BBM per m\u00b3 material']]
+    .map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+
+  const aktif = p.rows.filter(r => r.hari > 0);
+  const msgs = [];
+  const bestDT = p.rows.filter(r => r.jenis === 'DT' && r.prod > 0).sort((a, b) => b.prod - a.prod)[0];
+  if (bestDT) msgs.push(`DT paling produktif: <b>${esc(bestDT.kode)}</b> (${nf.format(bestDT.prod)} m\u00b3/jam).`);
+  const low = aktif.slice().sort((a, b) => a.util - b.util)[0];
+  if (low && low.util < 50) msgs.push(`Utilisasi terendah: <b>${esc(low.kode)}</b> (${nf.format(low.util)}%). Cek apakah alat sering standby atau rusak.`);
+  const hi = aktif.slice().sort((a, b) => b.lJam - a.lJam)[0];
+  if (hi && hi.lJam > 0) msgs.push(`BBM per jam tertinggi: <b>${esc(hi.kode)}</b> (${nf.format(hi.lJam)} L/jam).`);
+  $('pInfo').innerHTML = msgs.length ? msgs.join(' ') : 'Belum cukup data pada periode ini. Isi pemakaian alat dan langsir galian untuk melihat produktivitas.';
+
+  renderBars('pBarDT', p.rows.filter(r => r.jenis === 'DT'), 'prod', 'bbm', 'm\u00b3/jam');
+  renderBars('pBarExc', p.rows.filter(r => r.jenis === 'EXC'), 'prod', 'bbm', 'm\u00b3/jam');
+  renderBars('pBarUtil', aktif, 'util', 'jam', '%');
+
+  const nilai = u => u >= 75 ? ['Baik', 'Beroperasi'] : u >= 50 ? ['Cukup', 'Standby'] : ['Rendah', 'Rusak'];
+  $('pTabel').innerHTML = aktif.length
+    ? '<tr><th>Alat</th><th>Jam kerja</th><th>Volume (m\u00b3)</th><th>m\u00b3/jam</th><th>L/jam</th><th>L/m\u00b3</th><th>Utilisasi</th><th>Ketersediaan</th></tr>' +
+      aktif.map(r => { const n = nilai(r.util); return `<tr><td>${esc(r.kode)} <span class="tag">${esc(r.jenis === 'LAIN' ? 'Lainnya' : r.jenis)}</span></td><td>${nf.format(r.jam)}</td><td>${dash(r.vol)}</td><td>${dash(r.prod)}</td><td>${dash(r.lJam)}</td><td>${dash(r.lM3)}</td>
+        <td><span class="meter"><i style="width:${r.util}%"></i></span>${nf.format(r.util)}% <span class="b ${n[1]}">${n[0]}</span></td><td>${nf.format(r.avail)}%</td></tr>`; }).join('')
+    : '<tr><td>Belum ada data pada periode ini.</td></tr>';
+}
+$('pRng').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  PR = +b.dataset.d;
+  [...$('pRng').children].forEach(x => x.setAttribute('aria-pressed', x === b));
+  $('pInfo').textContent = 'Memuat data...';
+  loadProd();
+};
+
+/* ===== Laporan Harian ===== */
+function tglPanjang(s) { return new Date(s + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+let LAP = null;
+$('lTgl').value = new Date().toLocaleDateString('en-CA');
+function loadLaporan() {
+  $('lKertas').innerHTML = '<div class="empty">Memuat laporan...</div>';
+  google.script.run.withSuccessHandler(renderLaporan)
+    .withFailureHandler(err => { $('lKertas').innerHTML = '<div class="empty">Gagal memuat: ' + esc(err.message) + '</div>'; })
+    .getLaporanHarian($('lTgl').value);
+}
+function renderLaporan(r) {
+  LAP = r; const s = r.ringkas;
+  const stat = (v, t) => `<div class="stat"><b>${v}</b><span>${t}</span></div>`;
+  const alat = r.alat.length
+    ? '<tr><th>Alat</th><th>Operator</th><th>Lokasi</th><th>HM awal</th><th>HM akhir</th><th>Jam</th><th>BBM (L)</th><th>Status</th><th>Catatan</th></tr>' +
+      r.alat.map(l => `<tr><td>${esc(l.kode)} ${esc(l.nama)}</td><td>${esc(l.operator)}</td><td>${esc(l.lokasi)}</td><td>${l.hmAwal}</td><td>${l.hmAkhir}</td><td>${nf.format(l.jam)}</td><td>${nf.format(l.bbm)}</td><td><span class="b ${esc(l.status)}">${esc(l.status)}</span></td><td>${esc(l.catatan)}</td></tr>`).join('') +
+      `<tr class="tot"><td colspan="5">Total</td><td>${nf.format(s.jam)}</td><td>${nf.format(s.bbm)}</td><td colspan="2"></td></tr>`
+    : '<tr><td>Tidak ada data pemakaian alat pada tanggal ini.</td></tr>';
+  const gal = r.galian.length
+    ? '<tr><th>Excavator</th><th>Target (m\u00b3)</th><th>Hasil (m\u00b3)</th><th>Rit</th><th>Capaian</th><th>Keterangan</th><th>Catatan hasil galian</th></tr>' +
+      r.galian.map(g => { const n = nilaiG(g.capai); return `<tr><td>${esc(g.kode)} ${esc(g.nama)}</td><td>${nf.format(g.target)}</td><td>${nf.format(g.vol)}</td><td>${g.rit}</td><td>${nf.format(g.capai)}%</td><td><span class="b ${n[1]}">${n[0]}</span></td><td style="white-space:normal">${esc(g.catatan) || '-'}</td></tr>`; }).join('') +
+      (r.volTanpaExc > 0 ? `<tr><td>Excavator tidak tercatat</td><td></td><td>${nf.format(r.volTanpaExc)}</td><td></td><td></td><td></td></tr>` : '') +
+      `<tr class="tot"><td>Total</td><td>${nf.format(s.targetGalian)}</td><td>${nf.format(s.volGalian)}</td><td>${s.rit}</td><td>${nf.format(s.capaiGalian)}%</td><td></td></tr>`
+    : '<tr><td>Belum ada excavator terdaftar.</td></tr>';
+  const lang = r.langsir.length
+    ? '<tr><th>DT</th><th>Sopir</th><th>Exc. Pemuat</th><th>Exc. Bongkar</th><th>Rute</th><th>Material</th><th>Rit</th><th>Volume (m\u00b3)</th></tr>' +
+      r.langsir.map(l => `<tr><td>${esc(l.kode)}</td><td>${esc(l.sopir)}</td><td>${esc(l.excavator)}</td><td>${esc(l.excBongkar) || '-'}</td><td>${esc(l.asal)} \u2192 ${esc(l.tujuan)}</td><td>${esc(l.material)}</td><td>${l.rit}</td><td>${nf.format(l.vol)}</td></tr>`).join('') +
+      `<tr class="tot"><td colspan="6">Total</td><td>${nf.format(s.rit)}</td><td>${nf.format(s.volume)}</td></tr>`
+    : '<tr><td>Tidak ada data langsir pada tanggal ini.</td></tr>';
+  const ken = r.kendala.length ? '<ul>' + r.kendala.map(k => `<li><b>${esc(k.kode)}</b> (${esc(k.sumber)}): ${esc(k.teks)}</li>`).join('') + '</ul>' : '<div class="info">Tidak ada kendala atau catatan.</div>';
+  const bl = r.belumLapor.length ? r.belumLapor.map(esc).join(', ') : 'Semua alat sudah dilaporkan.';
+  $('lKertas').innerHTML = `<div class="rhead"><h2>LAPORAN HARIAN ALAT BERAT</h2>${r.proyek ? `<div>${esc(r.proyek)}</div>` : ''}<div>${esc(tglPanjang(r.tanggal))}</div></div>
+    <div class="stats">${stat(s.beroperasi, 'Alat beroperasi')}${stat(s.standby, 'Alat standby')}${stat(s.rusak, 'Alat rusak')}${stat(nf.format(s.jam), 'Jam kerja')}${stat(nf.format(s.bbm) + ' L', 'BBM terpakai')}${stat(nf.format(s.volGalian) + ' / ' + nf.format(s.targetGalian) + ' m\u00b3', 'Hasil galian vs target (' + nf.format(s.capaiGalian) + '%)')}${stat(s.rit + ' rit', 'Langsir galian')}${stat(s.prodDT ? nf.format(s.prodDT) + ' m\u00b3/jam' : '-', 'Produktivitas DT')}</div>
+    <h3>Progres total volume (kumulatif s.d. tanggal ini)</h3>${progHtml('Total galian', r.progres.galian)}<div style="height:10px"></div>${progHtml('Total langsiran', r.progres.langsir)}
+    <h3>A. Pemakaian alat</h3><div class="scroll"><table class="wide">${alat}</table></div>
+    <h3>B. Hasil galian per excavator</h3><div class="scroll"><table>${gal}</table></div>
+    <h3>C. Langsir bekas galian (DT)</h3><div class="scroll"><table>${lang}</table></div>
+    <h3>D. Kendala dan catatan</h3>${ken}
+    <h3>E. Alat belum dilaporkan</h3><div>${bl}</div>
+    <div class="sign"><div><span>Dibuat oleh</span></div><div><span>Mengetahui</span></div></div>`;
+}
+function waText(r) {
+  const s = r.ringkas, n = x => nf.format(x);
+  let t = `*LAPORAN HARIAN ALAT BERAT*\n${r.proyek ? r.proyek + '\n' : ''}${tglPanjang(r.tanggal)}\n\n*Ringkasan*\n` +
+    `- Beroperasi: ${s.beroperasi} | Standby: ${s.standby} | Rusak: ${s.rusak}\n- Jam kerja: ${n(s.jam)} jam\n- BBM: ${n(s.bbm)} L\n- Galian: ${n(s.volGalian)} / ${n(s.targetGalian)} m\u00b3 (${n(s.capaiGalian)}%)\n- Langsir: ${s.rit} rit\n` +
+    (s.prodDT ? `- Produktivitas DT: ${n(s.prodDT)} m\u00b3/jam\n` : '');
+  t += '\n*Progres kumulatif*\n- Galian: ' + n(r.progres.galian.real) + ' / ' + n(r.progres.galian.target) + ' m\u00b3 (' + n(r.progres.galian.capai) + '%)\n- Langsiran: ' + n(r.progres.langsir.real) + ' / ' + n(r.progres.langsir.target) + ' m\u00b3 (' + n(r.progres.langsir.capai) + '%)\n';
+  if (r.galian.length) t += '\n*Hasil galian vs target*\n' + r.galian.map(g => `- ${g.kode}: ${n(g.vol)} / ${n(g.target)} m\u00b3 (${n(g.capai)}%)${g.catatan ? '\n  Catatan: ' + g.catatan : ''}`).join('\n') + (r.volTanpaExc > 0 ? `\n- Excavator tidak tercatat: ${n(r.volTanpaExc)} m\u00b3` : '') + '\n';
+  if (r.alat.length) t += '\n*Pemakaian alat*\n' + r.alat.map((l, i) => `${i + 1}. ${l.kode} | ${l.operator} | ${l.lokasi || '-'} | ${n(l.jam)} jam | ${n(l.bbm)} L | ${l.status}`).join('\n') + '\n';
+  if (r.langsir.length) t += '\n*Langsir DT*\n' + r.langsir.map(l => `- ${l.kode} (${l.sopir}): ${l.rit} rit, ${n(l.vol)} m\u00b3, ${l.asal} \u2192 ${l.tujuan}${l.excBongkar ? ' (bongkar: ' + l.excBongkar + ')' : ''}`).join('\n') + '\n';
+  if (r.kendala.length) t += '\n*Kendala*\n' + r.kendala.map(k => `- ${k.kode}: ${k.teks}`).join('\n') + '\n';
+  if (r.belumLapor.length) t += '\n*Belum lapor*: ' + r.belumLapor.map(x => x.split(' - ')[0]).join(', ') + '\n';
+  return t.trim();
+}
+function lShow(t, c) { const m = $('lMsg'); m.textContent = t; m.className = 'msg ' + c; }
+$('lTgl').onchange = loadLaporan;
+$('lPrint').onclick = () => window.print();
+$('lWa').onclick = () => {
+  if (!LAP) return;
+  const t = waText(LAP), box = $('lBox');
+  box.hidden = false; box.value = t; box.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+  lShow(ok ? 'Laporan tersalin. Tempel di WhatsApp.' : 'Salin manual teks di kotak bawah ini, lalu tempel di WhatsApp.', ok ? 'ok' : 'err');
+};
+
+function hint() {
+  if (!D) return;
+  const hm = D.hmTerakhir[$('kode').value] || 0;
+  $('hmAwal').value = hm || '';
+  $('hint').textContent = hm ? 'HM terakhir: ' + hm : '';
+  hitung();
+}
+function hitung() {
+  const j = (parseFloat($('hmAkhir').value) || 0) - (parseFloat($('hmAwal').value) || 0);
+  $('jam').textContent = 'Jam kerja: ' + (j > 0 ? j.toFixed(1) : 0);
+}
+$('kode').onchange = hint; $('hmAwal').oninput = hitung; $('hmAkhir').oninput = hitung;
+
+function show(t, c) { const m = $('msg'); m.textContent = t; m.className = 'msg ' + c; }
+
+f.onsubmit = e => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(f));
+  $('btn').disabled = true; show('Menyimpan...', 'ok');
+  google.script.run
+    .withSuccessHandler(d => { render(d); show('Data tersimpan.', 'ok'); $('btn').disabled = false; $('hmAkhir').value = ''; hitung(); })
+    .withFailureHandler(err => { show(err.message, 'err'); $('btn').disabled = false; })
+    .saveLog(data);
+};
+
+google.script.run.withSuccessHandler(render)
+  .withFailureHandler(err => show('Gagal memuat data: ' + err.message + ' (jalankan setup() dulu)', 'err'))
+  .getData();
+</script>
+</body>
+</html>
