@@ -1174,6 +1174,75 @@ main{grid-template-columns:minmax(0,1fr)}
   waktu();
   btn.click(); // Ringkasan jadi halaman awal
 })();
+</script><!-- Bilah pencarian. Disisipkan oleh build.py setelah Dashboard.html. -->
+<style>
+.sr-bar{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:26px;padding:2px 6px 2px 16px;box-shadow:0 3px 12px rgba(0,0,0,.3)}
+.sr-bar:focus-within{outline:3px solid var(--y)}
+.sr-bar input{flex:1;min-width:0;border:0;outline:0!important;background:transparent;padding:0;min-height:44px;font-size:15px}
+.sr-bar button{background:#eef0f1;color:var(--ink);padding:0;width:32px;height:32px;min-height:0;border-radius:50%;font-size:14px}
+#srRes{margin-top:12px;max-height:65vh;overflow:auto}
+#srRes[hidden]{display:none}
+.sr-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.sr-top h2{margin:0}
+.sr-top button{padding:6px 12px;font-size:13px;background:var(--ink);color:#fff}
+.sr-h{margin:16px 0 6px;font-size:14px}
+mark{background:#ffe680;color:inherit;padding:0 1px;border-radius:2px}
+@media(max-width:700px){#srRes{max-height:60vh}}
+</style>
+<script>
+(function () {
+  const main = document.querySelector('main');
+
+  /* ================= PENCARIAN ================= */
+  const wrap = document.createElement('div'); wrap.className = 'noprint';
+  wrap.innerHTML = '<div class="sr-bar" role="search"><span aria-hidden="true">\u{1F50E}</span>' +
+    '<input id="srQ" type="search" placeholder="Cari alat, operator, lokasi, catatan, tanggal\u2026" autocomplete="off" enterkeyhint="search" aria-label="Cari data">' +
+    '<button type="button" id="srX" aria-label="Hapus pencarian" hidden>\u2715</button></div><section id="srRes" hidden></section>';
+  main.insertBefore(wrap, main.firstChild);
+
+  let timer = 0, reqId = 0, TERMS = [];
+  const hl = v => {
+    const s = esc(v == null ? '' : v);
+    if (!TERMS.length) return s;
+    const re = new RegExp('(' + TERMS.map(t => esc(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi');
+    return s.replace(re, '<mark>$1</mark>');
+  };
+  const grp = (judul, rows, head, fn) => rows.length
+    ? `<h3 class="sr-h">${judul} <span class="tag">${rows.length}</span></h3><div class="scroll"><table><tr>${head.map(h => '<th>' + h + '</th>').join('')}</tr>${rows.map(fn).join('')}</table></div>` : '';
+  const st = s => `<span class="b ${esc(s)}">${esc(s)}</span>`;
+  const cell = 'style="white-space:normal;min-width:150px"';
+
+  function tutupCari() { $('srRes').hidden = true; $('srRes').innerHTML = ''; }
+  function cari() {
+    const q = $('srQ').value.trim();
+    $('srX').hidden = !q;
+    if (q.length < 2) { reqId++; tutupCari(); return; }
+    const id = ++reqId, r = $('srRes');
+    r.hidden = false; r.innerHTML = '<div class="empty">Mencari\u2026</div>';
+    google.script.run
+      .withSuccessHandler(d => { if (id === reqId) tampil(d); })
+      .withFailureHandler(err => { if (id === reqId) r.innerHTML = '<div class="empty">Gagal mencari: ' + esc(err.message) + '</div>'; })
+      .cariData(q);
+  }
+  function tampil(d) {
+    TERMS = d.terms || [];
+    const head = `<div class="sr-top"><h2>Hasil pencarian: ${esc(d.q)}</h2><button type="button" id="srClose">Tutup</button></div>`;
+    if (!d.total) { $('srRes').innerHTML = head + '<div class="empty">Tidak ada data yang cocok. Coba kata lain, misalnya kode alat, nama operator, atau tanggal (2026-11-15 atau 15/11/2026).</div>'; return; }
+    $('srRes').innerHTML = head +
+      (d.terpotong ? '<p class="sub">Menampilkan 25 data terbaru per kelompok. Perjelas kata kunci untuk mempersempit.</p>' : '') +
+      grp('Alat', d.alat, ['Kode', 'Nama', 'Jenis', 'Target/hari'], a => `<tr><td>${hl(a.kode)}</td><td>${hl(a.nama)}</td><td>${hl(a.jenis)}</td><td>${a.target ? nf.format(a.target) + ' m\u00b3' : '-'}</td></tr>`) +
+      grp('Pemakaian alat', d.log, ['Tanggal', 'Alat', 'Operator', 'Lokasi', 'Jam', 'BBM', 'Status', 'Catatan'],
+        l => `<tr><td>${hl(l.tanggal)}</td><td>${hl(l.kode)} ${hl(l.nama)}</td><td>${hl(l.operator)}</td><td>${hl(l.lokasi) || '-'}</td><td>${nf.format(l.jam)}</td><td>${nf.format(l.bbm)} L</td><td>${st(l.status)}</td><td ${cell}>${hl(l.catatan) || '-'}</td></tr>`) +
+      grp('Langsir DT', d.langsir, ['Tanggal', 'DT', 'Sopir', 'Pemuat', 'Rute', 'Material', 'Rit', 'Volume', 'Catatan'],
+        l => `<tr><td>${hl(l.tanggal)}</td><td>${hl(l.kode)}</td><td>${hl(l.sopir)}</td><td>${hl(l.excavator) || '-'}</td><td>${hl(l.asal)} \u2192 ${hl(l.tujuan)}</td><td>${hl(l.material)}</td><td>${l.rit}</td><td>${nf.format(l.vol)} m\u00b3</td><td ${cell}>${hl(l.catatan) || '-'}</td></tr>`) +
+      grp('Hasil galian', d.galian, ['Tanggal', 'Excavator', 'Lokasi', 'Material', 'Volume', 'Rit', 'Catatan'],
+        g => `<tr><td>${hl(g.tanggal)}</td><td>${hl(g.excavator)}</td><td>${hl(g.lokasi) || '-'}</td><td>${hl(g.material)}</td><td>${nf.format(g.vol)} m\u00b3</td><td>${g.rit || '-'}</td><td ${cell}>${hl(g.catatan) || '-'}</td></tr>`);
+  }
+  $('srQ').addEventListener('input', () => { $('srX').hidden = !$('srQ').value; clearTimeout(timer); timer = setTimeout(cari, 450); });
+  $('srQ').addEventListener('keydown', e => { if (e.key === 'Enter') { clearTimeout(timer); cari(); } if (e.key === 'Escape') { $('srQ').value = ''; cari(); } });
+  $('srX').onclick = () => { $('srQ').value = ''; $('srX').hidden = true; reqId++; tutupCari(); $('srQ').focus(); };
+  $('srRes').addEventListener('click', e => { if (e.target.id === 'srClose') { reqId++; tutupCari(); } });
+})();
 </script><!-- Perapian tampilan HP. Disisipkan terakhir oleh build.py supaya menimpa gaya lain. Hanya aktif di layar <= 700px. -->
 <style>
 @media (max-width:700px){
