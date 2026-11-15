@@ -1243,6 +1243,165 @@ mark{background:#ffe680;color:inherit;padding:0 1px;border-radius:2px}
   $('srX').onclick = () => { $('srQ').value = ''; $('srX').hidden = true; reqId++; tutupCari(); $('srQ').focus(); };
   $('srRes').addEventListener('click', e => { if (e.target.id === 'srClose') { reqId++; tutupCari(); } });
 })();
+</script><!-- Suara: efek nada + musik latar (Web Audio, tanpa file audio). Disisipkan oleh build.py. -->
+<style>
+.sn-btn{position:fixed;left:14px;bottom:14px;z-index:55;width:46px;height:46px;padding:0;border-radius:50%;font-size:22px;line-height:1;background:linear-gradient(120deg,#7b3fe0,#1e63c8);color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.45)}
+.sn-btn.on{box-shadow:0 0 0 3px #f5c400,0 4px 16px rgba(0,0,0,.45)}
+.sn-pop{position:fixed;left:14px;bottom:70px;z-index:56;width:250px;max-width:calc(100vw - 28px);background:#fff;color:var(--ink);border-radius:12px;padding:12px 14px;box-shadow:0 8px 28px rgba(0,0,0,.5);display:grid;gap:12px}
+.sn-pop[hidden]{display:none}
+.sn-pop h3{margin:0;font-size:14px}
+.sn-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;font-weight:600}
+.sn-sw{position:relative;flex:none;width:44px;height:26px;padding:0;border-radius:13px;background:#c9cdd1}
+.sn-sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}
+.sn-sw[aria-checked=true]{background:var(--ok)}
+.sn-sw[aria-checked=true]::after{transform:translateX(18px)}
+.sn-pop input[type=range]{width:100%;min-height:0;padding:0;border:0;background:transparent}
+@media(prefers-reduced-motion:reduce){.sn-sw::after{transition:none}}
+</style>
+<script>
+(function () {
+  const KEY = 'snd_v1', q = id => document.getElementById(id);
+  let P = { fx: true, music: false, vol: 0.7 };
+  try { Object.assign(P, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+  const simpan = () => { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} };
+
+  /* ---------- Mesin audio ---------- */
+  let ctx = null, master, fxBus, musBus, mIn = null, timer = 0, nextBar = 0, bi = 0;
+  function ac() {
+    if (!ctx) {
+      const A = window.AudioContext || window.webkitAudioContext; if (!A) return null;
+      ctx = new A();
+      master = ctx.createGain(); master.connect(ctx.destination);
+      fxBus = ctx.createGain(); fxBus.gain.value = 0.9; fxBus.connect(master);
+      musBus = ctx.createGain(); musBus.gain.value = 0; musBus.connect(master);
+      vol();
+    }
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    return ctx;
+  }
+  function vol() { if (master) master.gain.value = Math.pow(P.vol, 2); }
+
+  function tone(f, t0, dur, o) {
+    o = o || {};
+    const osc = ctx.createOscillator(), g = ctx.createGain(), v = o.vol || 0.3, at = o.attack || 0.01;
+    osc.type = o.type || 'sine';
+    osc.frequency.setValueAtTime(f, t0);
+    if (o.slideTo) osc.frequency.exponentialRampToValueAtTime(o.slideTo, t0 + dur);
+    if (o.detune) osc.detune.value = o.detune;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(v, t0 + at);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(g); g.connect(o.bus || fxBus);
+    osc.start(t0); osc.stop(t0 + dur + 0.05);
+  }
+
+  /* ---------- Efek nada ---------- */
+  function fx(nama) {
+    if (!P.fx || !ac()) return;
+    const t = ctx.currentTime + 0.01;
+    if (nama === 'tick') tone(900, t, 0.07, { type: 'triangle', vol: 0.18 });
+    if (nama === 'ok') [523.25, 659.25, 783.99].forEach((f, i) => tone(f, t + i * 0.09, 0.4, { vol: 0.3 }));
+    if (nama === 'err') { tone(220, t, 0.2, { type: 'square', vol: 0.12, slideTo: 165 }); tone(220, t + 0.24, 0.22, { type: 'square', vol: 0.12, slideTo: 150 }); }
+    if (nama === 'chime') [659.25, 880].forEach((f, i) => tone(f, t + i * 0.12, 0.45, { vol: 0.25 }));
+  }
+
+  /* ---------- Musik latar (Am - F - C - G, tenang) ---------- */
+  const BEAT = 60 / 68, BAR = 4 * BEAT;
+  const CH = [[220.00, 261.63, 329.63], [174.61, 220.00, 261.63], [261.63, 329.63, 392.00], [196.00, 246.94, 293.66]];
+  const BASS = [110, 87.31, 130.81, 98];
+  const PENT = [440, 523.25, 587.33, 659.25, 783.99, 880];
+  function rantai() {
+    if (mIn) return;
+    mIn = ctx.createGain();
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400;
+    const dl = ctx.createDelay(1.5); dl.delayTime.value = BEAT * 0.75;
+    const fb = ctx.createGain(); fb.gain.value = 0.38;
+    const wet = ctx.createGain(); wet.gain.value = 0.45;
+    mIn.connect(lp); lp.connect(musBus);
+    lp.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(musBus);
+  }
+  function birama(t) {
+    const c = CH[bi % 4];
+    c.forEach((f, i) => {
+      tone(f, t, BAR + 1.2, { type: 'triangle', vol: 0.09, attack: 1.4, bus: mIn, detune: i * 3 });
+      tone(f * 2, t, BAR + 1.2, { type: 'sine', vol: 0.045, attack: 1.6, bus: mIn });
+    });
+    tone(BASS[bi % 4], t, BAR, { type: 'sine', vol: 0.22, attack: 0.08, bus: mIn });
+    for (let s = 0; s < 8; s++) if (Math.random() < 0.5)
+      tone(PENT[Math.floor(Math.random() * PENT.length)], t + s * BEAT / 2, 0.9, { type: 'triangle', vol: 0.1, bus: mIn });
+    bi++;
+  }
+  function jadwal() { if (!ctx || !P.music) return; while (nextBar < ctx.currentTime + 1.5) { birama(nextBar); nextBar += BAR; } }
+  function mulaiMusik() {
+    if (!ac()) return;
+    rantai();
+    musBus.gain.cancelScheduledValues(ctx.currentTime);
+    musBus.gain.setTargetAtTime(0.5, ctx.currentTime, 0.8);
+    nextBar = Math.max(nextBar, ctx.currentTime + 0.15);
+    if (!timer) timer = setInterval(jadwal, 300);
+    jadwal();
+  }
+  function henti() {
+    if (!ctx) return;
+    musBus.gain.setTargetAtTime(0, ctx.currentTime, 0.4);
+    setTimeout(() => { if (!P.music && timer) { clearInterval(timer); timer = 0; } }, 2500);
+  }
+
+  /* ---------- Antarmuka ---------- */
+  const root = document.createElement('div'); root.className = 'noprint';
+  root.innerHTML = '<button type="button" class="sn-btn" id="snBtn" aria-label="Pengaturan suara" aria-expanded="false">\u{1F3B5}</button>' +
+    '<div class="sn-pop" id="snPop" role="dialog" aria-label="Pengaturan suara" hidden><h3>Suara</h3>' +
+    '<div class="sn-row"><span>Musik latar</span><button type="button" class="sn-sw" id="snMus" role="switch" aria-checked="false" aria-label="Musik latar"></button></div>' +
+    '<div class="sn-row"><span>Efek nada</span><button type="button" class="sn-sw" id="snFx" role="switch" aria-checked="true" aria-label="Efek nada"></button></div>' +
+    '<label>Volume<input type="range" id="snVol" min="0" max="100" step="5"></label></div>';
+  document.body.appendChild(root);
+
+  function ui() {
+    q('snMus').setAttribute('aria-checked', P.music); q('snFx').setAttribute('aria-checked', P.fx);
+    q('snVol').value = Math.round(P.vol * 100);
+    q('snBtn').textContent = (P.music || P.fx) ? '\u{1F3B5}' : '\u{1F507}';
+    q('snBtn').classList.toggle('on', P.music);
+  }
+  q('snBtn').onclick = e => {
+    e.stopPropagation();
+    const buka = q('snPop').hidden; q('snPop').hidden = !buka; q('snBtn').setAttribute('aria-expanded', buka);
+  };
+  document.addEventListener('click', e => { if (!q('snPop').hidden && !e.target.closest('#snPop,#snBtn')) { q('snPop').hidden = true; q('snBtn').setAttribute('aria-expanded', 'false'); } });
+  q('snMus').onclick = () => { P.music = !P.music; simpan(); ui(); if (P.music) { mulaiMusik(); fx('chime'); } else henti(); };
+  q('snFx').onclick = () => { P.fx = !P.fx; simpan(); ui(); fx('tick'); };
+  q('snVol').oninput = () => { P.vol = q('snVol').value / 100; vol(); };
+  q('snVol').onchange = () => { simpan(); fx('tick'); };
+  ui();
+
+  /* ---------- Pemicu otomatis ---------- */
+  document.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (b && (b.closest('#tabs') || b.closest('.seg'))) fx('tick');
+  }, true);
+
+  let terakhir = '';
+  new MutationObserver(ms => {
+    for (const m of ms) {
+      const n = m.target.nodeType === 1 ? m.target : m.target.parentElement;
+      const el = n && n.closest && n.closest('.msg'); if (!el) continue;
+      const txt = (el.textContent || '').trim(), k = el.id + '|' + txt + '|' + el.className;
+      if (el.classList.contains('ok') && /tersimpan|tersalin/i.test(txt)) { if (k !== terakhir) { terakhir = k; fx('ok'); } }
+      else if (el.classList.contains('err') && txt) { if (k !== terakhir) { terakhir = k; fx('err'); } }
+      else terakhir = '';
+    }
+  }).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
+
+  /* Musik jalan lagi otomatis pada sentuhan pertama bila sebelumnya dinyalakan */
+  if (P.music) {
+    const go = () => { if (P.music) mulaiMusik(); };
+    ['click', 'keydown', 'touchend'].forEach(ev => addEventListener(ev, go, { once: true, passive: true }));
+  }
+  /* Hemat baterai: jeda saat aplikasi tidak tampil */
+  document.addEventListener('visibilitychange', () => {
+    if (!ctx) return;
+    (document.hidden ? ctx.suspend() : ctx.resume()).catch(() => {});
+  });
+})();
 </script><!-- Perapian tampilan HP. Disisipkan terakhir oleh build.py supaya menimpa gaya lain. Hanya aktif di layar <= 700px. -->
 <style>
 @media (max-width:700px){
